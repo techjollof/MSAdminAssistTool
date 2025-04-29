@@ -1,0 +1,9 @@
+TargetFolderName 			        = 	3DaysMoveDataArchive
+ArchiveOrRetentionTagRawRetentionId =  	xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+RetentionFlagsValue			        =	153
+ArchiveOrRetentionPeriodInDays     	=   3
+TenantInitialDomain			        =	JesusIsTheWay.onmicrosoft.com
+AzureEWSApplicationClientId		    = 	xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+TargetUserAccountsCsv			    =	UserAccounts.txt
+TargetFolderLocation			    = 	PrimaryMailBox
+ArchiveOrRetainAction               =   ArchiveAction
