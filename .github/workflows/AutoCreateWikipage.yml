@@ -1,0 +1,227 @@
+name: Sync Help Markdown Files to Wiki
+
+on:
+  push:
+    paths:
+      - '**/Help/**/*.md'
+    branches:
+      - main
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for proper change detection
+      
+    - name: Set Up Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Clone Wiki Repo
+      run: |
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki
+        
+    - name: Clean Wiki Directories
+      run: |
+        # Create backup of existing structure to identify files to be removed later
+        if [ -d "wiki" ]; then
+          find wiki -type f -name "*.md" > existing_files.txt
+        fi
+        
+        # Create directories but don't remove existing content yet
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          mkdir -p "wiki/$module"
+        done
+        
+    - name: Sync Help Markdown Files to Wiki
+      run: |
+        # Get the list of changed files in the current commit
+        changed_files=$(git diff --name-status ${{ github.event.before }} ${{ github.event.after }} | grep '\.md | grep -i '/Help/' || echo "")
+        
+        # If there are no changed markdown files, skip processing
+        if [ -z "$changed_files" ]; then
+          echo "No markdown files changed. Skipping sync."
+          exit 0
+        fi
+        
+        # Array to track which source files we've processed
+        > processed_files.txt
+        
+        # Process each modified or added file
+        echo "$changed_files" | while read change_type file_path; do
+          # Skip if not a markdown file in Help directory
+          if [[ ! "$file_path" =~ Help.*\.md$ ]]; then
+            continue
+          fi
+          
+          # Extract module and project from file path
+          if [[ "$file_path" =~ ^([^/]+)/([^/]+)/Help/ ]]; then
+            module="${BASH_REMATCH[1]}"
+            project="${BASH_REMATCH[2]}"
+            filename=$(basename "$file_path")
+            
+            # Record that we're processing this source file
+            echo "$file_path" >> processed_files.txt
+            
+            # Create destination directory if it doesn't exist
+            mkdir -p "wiki/$module/$project"
+            
+            # Different handling based on change type
+            # A = Added, M = Modified, D = Deleted, R = Renamed
+            case "$change_type" in
+              A|M)
+                # Added or Modified: Copy file to wiki
+                echo "Syncing $file_path to wiki/$module/$project/$filename"
+                cp "$file_path" "wiki/$module/$project/$filename"
+                ;;
+              D)
+                # Deleted: Remove file from wiki
+                echo "Removing wiki/$module/$project/$filename"
+                rm -f "wiki/$module/$project/$filename"
+                ;;
+              R*)
+                # Renamed: Extract old and new paths
+                if [[ "$change_type" =~ R[0-9]+ ]]; then
+                  # For rename, file_path contains the new path, and we need to extract the old path
+                  old_path=$(echo "$file_path" | cut -f2)
+                  new_path=$(echo "$file_path" | cut -f3)
+                  
+                  # Extract old module, project, and filename
+                  if [[ "$old_path" =~ ^([^/]+)/([^/]+)/Help/ ]]; then
+                    old_module="${BASH_REMATCH[1]}"
+                    old_project="${BASH_REMATCH[2]}"
+                    old_filename=$(basename "$old_path")
+                    
+                    # Remove old file
+                    echo "Removing old file wiki/$old_module/$old_project/$old_filename"
+                    rm -f "wiki/$old_module/$old_project/$old_filename"
+                  fi
+                  
+                  # Copy new file
+                  echo "Syncing renamed file to wiki/$module/$project/$filename"
+                  cp "$new_path" "wiki/$module/$project/$filename"
+                fi
+                ;;
+            esac
+          fi
+        done
+        
+        # Also scan all source files to ensure full sync
+        # This ensures renamed directories are handled properly
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          if [ -d "$module" ]; then
+            for project in "$module"/*/; do
+              if [ -d "$project" ]; then
+                projectname=$(basename "$project")
+                
+                # Create project directory in wiki
+                mkdir -p "wiki/$module/$projectname"
+                
+                # Find and copy help markdown files for this project
+                if [ -d "$project/Help" ]; then
+                  find "$project/Help" -name "*.md" -type f | while read src_file; do
+                    # Only process if not already processed
+                    if ! grep -q "^$src_file$" processed_files.txt; then
+                      filename=$(basename "$src_file")
+                      echo "Syncing $src_file to wiki/$module/$projectname/$filename"
+                      cp "$src_file" "wiki/$module/$projectname/$filename"
+                      echo "$src_file" >> processed_files.txt
+                    fi
+                  done
+                fi
+              fi
+            done
+          fi
+        done
+        
+        # Clean up orphaned files
+        find wiki -type f -name "*.md" | grep -v "Home\.md" | while read wiki_file; do
+          # Skip module index pages
+          if [[ "$wiki_file" =~ ^wiki/[^/]+\.md$ ]]; then
+            continue
+          fi
+          
+          # Extract parts from wiki path
+          if [[ "$wiki_file" =~ ^wiki/([^/]+)/([^/]+)/([^/]+)$ ]]; then
+            module="${BASH_REMATCH[1]}"
+            project="${BASH_REMATCH[2]}"
+            filename="${BASH_REMATCH[3]}"
+            
+            # Check if source file exists
+            source_path="$module/$project/Help/$filename"
+            if [ ! -f "$source_path" ]; then
+              echo "Removing orphaned file $wiki_file"
+              rm -f "$wiki_file"
+            fi
+          fi
+        done
+        
+        # Clean up empty directories
+        find wiki -type d -empty -delete
+        
+    - name: Generate Main Wiki Pages
+      run: |
+        cd wiki
+        
+        # Create Home page that links to all modules
+        echo "# Admin Tools Wiki" > Home.md
+        echo "" >> Home.md
+        echo "## Available Modules" >> Home.md
+        
+        # Loop through each admin module to create/update main pages and add to Home
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          # Only add module to home page if it has content
+          if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+            echo "- [$module]($module)" >> Home.md
+            
+            # Create the module index page
+            echo "# $module Help Files" > "$module.md"
+            echo "" >> "$module.md"
+            
+            # Add links to each project
+            for projectDir in "$module"/*/; do
+              if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+                projectname=$(basename "$projectDir")
+                echo "## $projectname" >> "$module.md"
+                
+                # Add links to each markdown file in the project
+                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+                  filename=$(basename "$mdfile")
+                  # Extract title from first heading in the file, or use filename if no heading
+                  title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+                done
+                
+                echo "" >> "$module.md"
+              fi
+            done
+          fi
+        done
+        
+        # Remove module pages without content
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          if [ ! -d "$module" ] || [ "$(find "$module" -type f -name "*.md" | wc -l)" -eq 0 ]; then
+            rm -f "$module.md"
+          fi
+        done
+        
+    - name: Commit and Push to Wiki
+      run: |
+        cd wiki
+        # Add all changes
+        git add .
+        
+        # Only commit if there are changes
+        if ! git diff --quiet --cached; then
+          git commit -m "Sync Help Markdown files to wiki - automated update"
+          # Push changes to the wiki repository
+          git push
+        else
+          echo "No changes to commit"
+        fi
