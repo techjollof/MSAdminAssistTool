@@ -3,7 +3,7 @@ name: Sync Help Docs to Wiki (Main Pages + Subdocs)
 on:
   push:
     branches:
-      - MSAdminAssistToolDev
+      - MSAdminAssistTool
     paths:
       - '**/Help/*.md'
   schedule:
