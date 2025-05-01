@@ -4,7 +4,7 @@ on:
     paths:
       - '**/Help/**/*.md'
     branches:
-      - MSAdminAssistTool
+      - main
 jobs:
   sync-wiki:
     runs-on: ubuntu-latest
