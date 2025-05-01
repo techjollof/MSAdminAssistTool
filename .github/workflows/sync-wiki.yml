@@ -1,0 +1,63 @@
+name: Sync Help Docs to Wiki (Main Pages + Subdocs)
+
+on:
+  push:
+    branches:
+      - MSAdminAssistToolDev
+    paths:
+      - '**/Help/*.md'
+  schedule:
+    - cron: '0 3 * * *'  # Daily at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Repo
+      uses: actions/checkout@v3
+
+    - name: Set Git Identity
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Clone Wiki Repository
+      run: |
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki
+
+    - name: Copy Help Markdown Files (Original Filenames)
+      run: |
+        mkdir -p wiki_tmp
+        find . -type f -path "*/Help/*.md" ! -path "./wiki/*" | while read filepath; do
+          filename=$(basename "$filepath")
+          cp "$filepath" "wiki_tmp/$filename"
+        done
+        cp wiki_tmp/*.md wiki/
+
+    - name: Generate Main Pages (Index for Each Tool)
+      run: |
+        # Function to create the main page for each tool
+        create_main_page() {
+          TOOL=$1
+          echo "## $TOOL" > wiki/$TOOL.md
+          find . -type f -path "$TOOL*/Help/*.md" | while read filepath; do
+            filename=$(basename "$filepath" .md)
+            echo "- [$filename]($filepath)" >> wiki/$TOOL.md
+          done
+        }
+
+        # Generate main pages for each tool
+        create_main_page "EntraIDAdmin"
+        create_main_page "EXOAdmin"
+        create_main_page "SCCAdmin"
+        create_main_page "SPOAdmin"
+        create_main_page "TeamsAdmin"
+
+    - name: Commit and Push to Wiki
+      run: |
+        cd wiki
+        git add .
+        git commit -m "Auto-sync Help markdown files and main pages to wiki [skip ci]" || echo "No changes to commit"
+        git push
