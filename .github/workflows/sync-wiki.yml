@@ -144,7 +144,7 @@ jobs:
             echo "- [$module]($module)" >> Home.md
             
             # Create the module index page
-            echo "# $module Help Files" > "$module.md"
+            # echo "# $module Help Files" > "$module.md"
             echo "" >> "$module.md"
             
             # Add links to each project
