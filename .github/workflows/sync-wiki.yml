@@ -1,10 +1,12 @@
 name: Sync Help Markdown Files to Wiki
+
 on:
   push:
     paths:
       - '**/Help/**/*.md'
     branches:
-      - main
+      - MSAdminAssistTool
+
 jobs:
   sync-wiki:
     runs-on: ubuntu-latest
@@ -13,60 +15,87 @@ jobs:
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
-
+      
     - name: Set Up Git
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
+        
     - name: Clone Wiki Repo
       run: |
-        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
-
-    - name: Copy Markdown Files to Wiki with Project Structure
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki
+        
+    - name: Create Directory Structure and Copy Markdown Files
       run: |
-        # Create the wiki directory if it doesn't exist
-        mkdir -p wiki
-        # Find all .md files in the Help directories and copy them to the wiki repo
-        find . -type f -path "*/Help/*.md" | while read file; do
-          # Extract the module, project, and filename
-          module=$(echo "$file" | awk -F'/' '{print $2}')
-          project=$(echo "$file" | awk -F'/' '{print $3}')
-          fname=$(basename "$file")
-          # Create the corresponding directory structure in the wiki
-          mkdir -p "wiki/$module/$project"
-          # Copy the .md file to the appropriate location in the wiki
-          cp "$file" "wiki/$module/$project/$fname"
-        done
-
-    - name: Generate Main Wiki Pages
-      run: |
-        cd wiki
-        # Create or update main pages for each module (e.g., EntraIDAdmin.md, EXOAdmin.md)
+        # Loop through each admin module
         for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
-          # Create the module page with a heading
-          echo "# $module Help Files" > "$module.md"
-          # Loop through projects under each admin section
+          # Create module directory in wiki if it doesn't exist
+          mkdir -p "wiki/$module"
+          
+          # Process each project within the module
           if [ -d "$module" ]; then
-            for project in "$module"/*; do
-              projectname=$(basename "$project")
-              echo -e "\n## $projectname" >> "$module.md"
-              # Loop through .md files in each project
-              find "$project" -type f -name "*.md" | while read mdfile; do
-                fname=$(basename "$mdfile")
-                # Add each .md file to the respective project section
-                echo "- [$fname]($module/$projectname/$fname)" >> "$module.md"
-              done
+            for project in "$module"/*/; do
+              if [ -d "$project" ]; then
+                projectname=$(basename "$project")
+                # Create project directory in wiki
+                mkdir -p "wiki/$module/$projectname"
+                
+                # Find and copy help markdown files for this project
+                if [ -d "$project/Help" ]; then
+                  find "$project/Help" -name "*.md" -type f -exec cp {} "wiki/$module/$projectname/" \;
+                fi
+              fi
             done
           fi
         done
-
+        
+    - name: Generate Main Wiki Pages
+      run: |
+        cd wiki
+        
+        # Create Home page that links to all modules
+        echo "# Admin Tools Wiki" > Home.md
+        echo "" >> Home.md
+        echo "## Available Modules" >> Home.md
+        
+        # Loop through each admin module to create main pages and add to Home
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          # Add module to home page
+          echo "- [$module]($module)" >> Home.md
+          
+          # Create the module index page
+          echo "# $module Help Files" > "$module.md"
+          echo "" >> "$module.md"
+          
+          # Only proceed if module directory exists in wiki
+          if [ -d "$module" ]; then
+            # Add links to each project
+            for projectDir in "$module"/*/; do
+              if [ -d "$projectDir" ]; then
+                projectname=$(basename "$projectDir")
+                echo "## $projectname" >> "$module.md"
+                
+                # Add links to each markdown file in the project
+                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+                  filename=$(basename "$mdfile")
+                  title=$(head -n 1 "$mdfile" | sed 's/^#\s*//')
+                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+                done
+                
+                echo "" >> "$module.md"
+              fi
+            done
+          fi
+        done
+        
     - name: Commit and Push to Wiki
       run: |
         cd wiki
-        # Add all changes (new files and wiki page updates)
+        # Add all changes
         git add .
+        
         # Only commit if there are changes
-        git diff --quiet || git commit -m "Sync Help Markdown files to wiki"
+        git diff --quiet || git commit -m "Sync Help Markdown files to wiki with hierarchical structure"
+        
         # Push changes to the wiki repository
         git push
