@@ -11,9 +11,9 @@ name: PSScriptAnalyzer
 
 on:
   push:
-    branches: [ "MSAdminAssistTool" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "MSAdminAssistTool" ]
+    branches: [ "main" ]
   schedule:
     - cron: '40 20 * * 6'
 
