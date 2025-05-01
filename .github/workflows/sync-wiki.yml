@@ -1,19 +1,15 @@
 name: Sync Help Markdown Files to Wiki
-
 on:
   push:
     paths:
       - '**/Help/**/*.md'
     branches:
       - MSAdminAssistTool
-
 jobs:
   sync-wiki:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
-
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
@@ -25,34 +21,44 @@ jobs:
 
     - name: Clone Wiki Repo
       run: |
-        git clone https://github.com/${{ github.repository }}.wiki.git wiki
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki || true
 
-    - name: Copy Markdown Files to Wiki
+    - name: Copy Markdown Files to Wiki with Project Structure
       run: |
-        # This command finds all the .md files in the Help folders and copies them to the wiki repo.
+        # Create the wiki directory if it doesn't exist
+        mkdir -p wiki
+        # Find all .md files in the Help directories and copy them to the wiki repo
         find . -type f -path "*/Help/*.md" | while read file; do
-          # Copy each .md file to the wiki directory, maintaining file names.
-          cp "$file" "wiki/$(basename "$file")"
+          # Extract the module, project, and filename
+          module=$(echo "$file" | awk -F'/' '{print $2}')
+          project=$(echo "$file" | awk -F'/' '{print $3}')
+          fname=$(basename "$file")
+          # Create the corresponding directory structure in the wiki
+          mkdir -p "wiki/$module/$project"
+          # Copy the .md file to the appropriate location in the wiki
+          cp "$file" "wiki/$module/$project/$fname"
         done
 
     - name: Generate Main Wiki Pages
       run: |
         cd wiki
-        # Create or update main pages for each section (e.g., EntraIDAdmin.md, EXOAdmin.md)
+        # Create or update main pages for each module (e.g., EntraIDAdmin.md, EXOAdmin.md)
         for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
           # Create the module page with a heading
           echo "# $module Help Files" > "$module.md"
           # Loop through projects under each admin section
-          for project in ../$module/*/; do
-            projectname=$(basename "$project")
-            echo -e "\n## $projectname" >> "$module.md"
-            # Loop through .md files in each project
-            find "$project" -type f -path "*/Help/*.md" | while read mdfile; do
-              fname=$(basename "$mdfile")
-              # Add each .md file to the respective project section
-              echo "- [$fname]($fname)" >> "$module.md"
+          if [ -d "$module" ]; then
+            for project in "$module"/*; do
+              projectname=$(basename "$project")
+              echo -e "\n## $projectname" >> "$module.md"
+              # Loop through .md files in each project
+              find "$project" -type f -name "*.md" | while read mdfile; do
+                fname=$(basename "$mdfile")
+                # Add each .md file to the respective project section
+                echo "- [$fname]($module/$projectname/$fname)" >> "$module.md"
+              done
             done
-          done
+          fi
         done
 
     - name: Commit and Push to Wiki
