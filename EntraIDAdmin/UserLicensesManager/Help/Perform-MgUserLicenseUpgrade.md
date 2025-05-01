@@ -1,6 +1,6 @@
-# 📦 `Perform-MgUserLicenseUpgrade` Documentation
+# Perform-MgUserLicenseUpgrade
 
-## 📝 Overview
+## Overview
 
 The `Perform-MgUserLicenseUpgrade` script is designed to **migrate Microsoft 365 users from one license SKU to another**, supporting optional **disabling of specific service plans**, interactive GUI-based SKU selection, and advanced CSV parsing. It uses the Microsoft Graph PowerShell SDK.
 
