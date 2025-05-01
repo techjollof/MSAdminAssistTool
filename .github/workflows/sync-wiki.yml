@@ -42,8 +42,7 @@ jobs:
     - name: Sync Help Markdown Files to Wiki
       run: |
         # Get the list of changed files in the current commit
-        changed_files=$(git diff --name-status ${{ github.event.before }} ${{ github.event.after }} | grep '\.md
- | grep -i '/Help/' || echo "")
+        changed_files=$(git diff --name-status ${{ github.event.before }} ${{ github.event.after }} | grep '\.md | grep -i '/Help/' || echo "")
         
         # If there are no changed markdown files, skip processing
         if [ -z "$changed_files" ]; then
