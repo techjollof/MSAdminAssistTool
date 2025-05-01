@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '**/Help/**/*.md'
+    branches:
+      - MSAdminAssistTool
 
 jobs:
   sync-wiki:
@@ -25,22 +27,29 @@ jobs:
       run: |
         git clone https://github.com/${{ github.repository }}.wiki.git wiki
 
-    - name: Copy .md Files to Wiki
+    - name: Copy Markdown Files to Wiki
       run: |
+        # This command finds all the .md files in the Help folders and copies them to the wiki repo.
         find . -type f -path "*/Help/*.md" | while read file; do
+          # Copy each .md file to the wiki directory, maintaining file names.
           cp "$file" "wiki/$(basename "$file")"
         done
 
     - name: Generate Main Wiki Pages
       run: |
         cd wiki
+        # Create or update main pages for each section (e.g., EntraIDAdmin.md, EXOAdmin.md)
         for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          # Create the module page with a heading
           echo "# $module Help Files" > "$module.md"
+          # Loop through projects under each admin section
           for project in ../$module/*/; do
             projectname=$(basename "$project")
             echo -e "\n## $projectname" >> "$module.md"
+            # Loop through .md files in each project
             find "$project" -type f -path "*/Help/*.md" | while read mdfile; do
               fname=$(basename "$mdfile")
+              # Add each .md file to the respective project section
               echo "- [$fname]($fname)" >> "$module.md"
             done
           done
@@ -49,6 +58,9 @@ jobs:
     - name: Commit and Push to Wiki
       run: |
         cd wiki
+        # Add all changes (new files and wiki page updates)
         git add .
-        git commit -m "Sync Help Markdown files to wiki" || echo "No changes to commit"
+        # Only commit if there are changes
+        git diff --quiet || git commit -m "Sync Help Markdown files to wiki"
+        # Push changes to the wiki repository
         git push
