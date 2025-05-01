@@ -1,4 +1,4 @@
-# **Password Expiry Notification System**  
+# Password Expiry Notification System  
 
 ## **Overview**  
 

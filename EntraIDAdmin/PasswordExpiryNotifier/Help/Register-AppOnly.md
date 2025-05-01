@@ -1,4 +1,4 @@
-# RegisterAppOnly Help
+# Register AppOnly
 
 ## Overview
 

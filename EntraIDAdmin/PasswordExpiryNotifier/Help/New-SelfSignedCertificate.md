@@ -1,4 +1,4 @@
-# Self-Signed Certificate Generation Help
+# Self-Signed Certificate Generation
 
 ## Overview
 

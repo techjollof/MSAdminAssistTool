@@ -1,4 +1,4 @@
-# Microsoft 365 User Provisioning and License Management
+# Provisioning and License Management Summary
 
 ## 📑 Table of Contents
 

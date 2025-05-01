@@ -1,4 +1,4 @@
-# Extensive Technical Documentation: Password Expiry Notification System
+# Advanced Technical Documentation
 
 ## Table of Contents
 
