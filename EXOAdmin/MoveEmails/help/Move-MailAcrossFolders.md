@@ -1,5 +1,4 @@
-# Email Folder Migration Tool - Help Documentation
-
+# Email Folder Migration Tool
 ## Overview
 
 This PowerShell script enables efficient migration of email messages between folders within the same Microsoft Exchange Online mailbox using Microsoft Graph API. It provides options for both individual and batch processing of message moves with comprehensive error handling and detailed progress reporting.
@@ -24,7 +23,7 @@ This PowerShell script enables efficient migration of email messages between fol
 ### Basic Usage
 
 ```powershell
-.\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive"
+.\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive"
 ```
 
 ## Parameters
@@ -47,25 +46,25 @@ This PowerShell script enables efficient migration of email messages between fol
 ### Example 1: Basic Migration
 Move all messages from Inbox to Archive folder:
 ```powershell
-.\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive"
+.\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive"
 ```
 
 ### Example 2: Batch Processing
 Move messages in batches of 10 with a 2-second delay between batches:
 ```powershell
-.\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -BatchMove -BatchSize 10 -DelayInSeconds 2
+.\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -BatchMove -BatchSize 10 -DelayInSeconds 2
 ```
 
 ### Example 3: Customized Display and Retry Logic
 Customize the progress display frequency and retry attempts:
 ```powershell
-.\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultDisplayFrequency 20 -MaxRetryAttempts 5
+.\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultDisplayFrequency 20 -MaxRetryAttempts 5
 ```
 
 ### Example 4: Disable Logging
 Run the migration without generating failure logs:
 ```powershell
-.\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -EnableLogging $false
+.\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -EnableLogging $false
 ```
 
 ## Performance Considerations
@@ -123,14 +122,14 @@ For folders with tens of thousands of messages, consider these approaches:
 1. **Run in multiple batches**:
    ```powershell
    # First run - process first 5000 messages
-   .\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultSize 5000 -BatchMove
+   .\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultSize 5000 -BatchMove
    
    # Subsequent runs if needed
    ```
 
 2. **Increase result display frequency for less verbose output**:
    ```powershell
-   .\Move-MailFolderMessages.ps1 -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultDisplayFrequency 100 -BatchMove
+   .\Move-MailAcrossFolders -UserId "user@example.com" -SourceFolderName "Inbox" -DestinationFolderName "Archive" -ResultDisplayFrequency 100 -BatchMove
    ```
 
 ## Notes and Limitations

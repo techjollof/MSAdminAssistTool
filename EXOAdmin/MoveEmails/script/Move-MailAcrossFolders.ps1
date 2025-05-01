@@ -35,17 +35,17 @@
     (Optional) Switch. If specified, logs failures to a CSV file in the script directory.
 
 .EXAMPLE
-    .\Move-MailAcross.ps1 -UserId "user@domain.com" -SourceFolderName "Alexa" -DestinationFolderName "Inbox" -BatchMove -BatchSize 10 -EnableLogging
+    .\Move-MailAcrossFolders.ps1 -UserId "user@domain.com" -SourceFolderName "Alexa" -DestinationFolderName "Inbox" -BatchMove -BatchSize 10 -EnableLogging
 
     Moves all messages from the "Alexa" folder to the "Inbox" folder in batches of 10, with logging enabled.
 
 .EXAMPLE
-    .\Move-MailAcross.ps1 -UserId "admin@domain.com" -SourceFolderName "Sent Items" -DestinationFolderName "Inbox"
+    .\Move-MailAcrossFolders.ps1 -UserId "admin@domain.com" -SourceFolderName "Sent Items" -DestinationFolderName "Inbox"
 
     Moves messages from the "Sent Items" folder to the "Inbox" folder one by one (default single message move).
 
 .EXAMPLE
-    .\Move-MailAcross.ps1 -UserId "user@domain.com" -SourceFolderName "Drafts" -DestinationFolderName "Sent Items" -BatchMove -BatchSize 5
+    .\Move-MailAcrossFolders.ps1 -UserId "user@domain.com" -SourceFolderName "Drafts" -DestinationFolderName "Sent Items" -BatchMove -BatchSize 5
 
     Moves messages from the "Drafts" folder to the "Sent Items" folder in batches of 5 messages. Does not log failures.
 
