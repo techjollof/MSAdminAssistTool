@@ -1,49 +1,48 @@
-name: Sync Help Docs to Wiki
+name: Sync Help Markdown Files to Wiki
 
 on:
   push:
-    branches:
-      - MSAdminAssistTool
     paths:
-      - '**/Help/*.md'
-  schedule:
-    - cron: '0 3 * * *'  # Optional: runs daily at 03:00 UTC
-  workflow_dispatch:
+      - '**/Help/**/*.md'
 
 jobs:
   sync-wiki:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
 
-    - name: Set Git Identity
+    - name: Set Up Git
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Clone Wiki Repository
+    - name: Clone Wiki Repo
       run: |
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
+        git clone https://github.com/${{ github.repository }}.wiki.git wiki
 
-    - name: Copy Help Markdown Files
+    - name: Copy .md Files to Wiki
       run: |
-        mkdir -p wiki_tmp
-        find . -type f -path "*/Help/*.md" ! -path "./wiki/*" | while read filepath; do
-          filename=$(basename "$filepath")
-          cp "$filepath" "wiki_tmp/$filename"
+        find . -type f -path "*/Help/*.md" | while read file; do
+          cp "$file" "wiki/$(basename "$file")"
         done
-        cp wiki_tmp/*.md wiki/
 
     - name: Generate Main Wiki Pages
       run: |
         cd wiki
         for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
           echo "# $module Help Files" > "$module.md"
-          find ../$module -type f -path "*/Help/*.md" | while read mdfile; do
-            fname=$(basename "$mdfile")
-            echo "- [$fname]($fname)" >> "$module.md"
+          for project in ../$module/*/; do
+            projectname=$(basename "$project")
+            echo -e "\n## $projectname" >> "$module.md"
+            find "$project" -type f -path "*/Help/*.md" | while read mdfile; do
+              fname=$(basename "$mdfile")
+              echo "- [$fname]($fname)" >> "$module.md"
+            done
           done
         done
 
@@ -51,5 +50,5 @@ jobs:
       run: |
         cd wiki
         git add .
-        git commit -m "Auto-sync Help markdown files to wiki [skip ci]" || echo "Nothing to commit"
+        git commit -m "Sync Help Markdown files to wiki" || echo "No changes to commit"
         git push
