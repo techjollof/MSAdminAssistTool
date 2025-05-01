@@ -1,4 +1,4 @@
-name: Sync Help Docs to Wiki (Main Pages + Subdocs)
+name: Sync Help Docs to Wiki
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     paths:
       - '**/Help/*.md'
   schedule:
-    - cron: '0 3 * * *'  # Daily at 03:00 UTC
+    - cron: '0 3 * * *'  # Optional: runs daily at 03:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Source Repo
+    - name: Checkout Repo
       uses: actions/checkout@v3
 
     - name: Set Git Identity
@@ -25,9 +25,9 @@ jobs:
 
     - name: Clone Wiki Repository
       run: |
-        git clone https://github.com/${{ github.repository }}.wiki.git wiki
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
 
-    - name: Copy Help Markdown Files (Original Filenames)
+    - name: Copy Help Markdown Files
       run: |
         mkdir -p wiki_tmp
         find . -type f -path "*/Help/*.md" ! -path "./wiki/*" | while read filepath; do
@@ -36,28 +36,20 @@ jobs:
         done
         cp wiki_tmp/*.md wiki/
 
-    - name: Generate Main Pages (Index for Each Tool)
+    - name: Generate Main Wiki Pages
       run: |
-        # Function to create the main page for each tool
-        create_main_page() {
-          TOOL=$1
-          echo "## $TOOL" > wiki/$TOOL.md
-          find . -type f -path "$TOOL*/Help/*.md" | while read filepath; do
-            filename=$(basename "$filepath" .md)
-            echo "- [$filename]($filepath)" >> wiki/$TOOL.md
+        cd wiki
+        for module in EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin; do
+          echo "# $module Help Files" > "$module.md"
+          find ../$module -type f -path "*/Help/*.md" | while read mdfile; do
+            fname=$(basename "$mdfile")
+            echo "- [$fname]($fname)" >> "$module.md"
           done
-        }
-
-        # Generate main pages for each tool
-        create_main_page "EntraIDAdmin"
-        create_main_page "EXOAdmin"
-        create_main_page "SCCAdmin"
-        create_main_page "SPOAdmin"
-        create_main_page "TeamsAdmin"
+        done
 
     - name: Commit and Push to Wiki
       run: |
         cd wiki
         git add .
-        git commit -m "Auto-sync Help markdown files and main pages to wiki [skip ci]" || echo "No changes to commit"
+        git commit -m "Auto-sync Help markdown files to wiki [skip ci]" || echo "Nothing to commit"
         git push
