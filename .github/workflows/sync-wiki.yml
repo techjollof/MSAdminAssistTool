@@ -1,0 +1,186 @@
+name: Sync Help Markdown Files to Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/Help/**/*.md'
+      - '.github/workflows/sync-wiki.yml'  # Allow the workflow itself to trigger
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for proper change detection
+      
+    - name: Debug Information
+      run: |
+        echo "GitHub ref: ${{ github.ref }}"
+        echo "GitHub event name: ${{ github.event_name }}"
+        echo "Working directory:"
+        pwd
+        echo "Repository contents:"
+        ls -la
+        echo "Help directories:"
+        find . -type d -path "*/Help" || echo "No Help directories found"
+        echo "Markdown files in Help directories:"
+        find . -type f -path "*/Help/*.md" || echo "No markdown files found"
+      
+    - name: Set Up Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Clone Wiki Repo
+      run: |
+        echo "Attempting to clone wiki repository..."
+        git clone https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.wiki.git wiki || echo "No wiki exists yet, creating new wiki"
+        mkdir -p wiki
+        
+    - name: Sync Help Markdown Files to Wiki
+      run: |
+        echo "Starting sync process..."
+        
+        # For initial run, just copy all markdown files from Help directories
+        echo "Copying all markdown files from Help directories..."
+        
+        # Array to track which source files we've processed
+        > processed_files.txt
+        
+        # Process all markdown files in Help directories
+        for module in $(find . -maxdepth 1 -type d -not -path "./.*" | sed 's|^\./||' | grep -v "^$" | grep -v "^wiki$"); do
+          echo "Processing module: $module"
+          if [ -d "$module" ]; then
+            for project in "$module"/*/; do
+              if [ -d "$project" ]; then
+                projectname=$(basename "$project")
+                echo "  Processing project: $projectname"
+                
+                # Create project directory in wiki
+                mkdir -p "wiki/$module/$projectname"
+                
+                # Find and copy help markdown files for this project
+                if [ -d "$project/Help" ]; then
+                  echo "    Found Help directory"
+                  find "$project/Help" -name "*.md" -type f | while read src_file; do
+                    filename=$(basename "$src_file")
+                    echo "    Copying $src_file to wiki/$module/$projectname/$filename"
+                    cp "$src_file" "wiki/$module/$projectname/$filename" || echo "Failed to copy $src_file"
+                    echo "$src_file" >> processed_files.txt
+                  done
+                else
+                  echo "    No Help directory found in $project"
+                fi
+              fi
+            done
+          fi
+        done
+        
+        echo "Finished copying files."
+        
+        # Clean up orphaned files
+        echo "Checking for orphaned files..."
+        if [ -d "wiki" ]; then
+          find wiki -type f -name "*.md" | grep -v "Home\.md" | while read wiki_file; do
+            # Skip module index pages
+            if [[ "$wiki_file" =~ ^wiki/[^/]+\.md$ ]]; then
+              continue
+            fi
+            
+            # Extract parts from wiki path
+            if [[ "$wiki_file" =~ ^wiki/([^/]+)/([^/]+)/([^/]+)$ ]]; then
+              module="${BASH_REMATCH[1]}"
+              project="${BASH_REMATCH[2]}"
+              filename="${BASH_REMATCH[3]}"
+              
+              # Check if source file exists
+              source_path="$module/$project/Help/$filename"
+              if [ ! -f "$source_path" ]; then
+                echo "Removing orphaned file $wiki_file"
+                rm -f "$wiki_file"
+              fi
+            fi
+          done
+        fi
+        
+        # Clean up empty directories
+        find wiki -type d -empty -delete || echo "No empty directories to remove"
+        
+    - name: Generate Main Wiki Pages
+      run: |
+        cd wiki
+        echo "Generating wiki index pages..."
+        
+        # Create Home page that links to all modules
+        echo "# Admin Tools Wiki" > Home.md
+        echo "" >> Home.md
+        echo "## Available Modules" >> Home.md
+        
+        # Get all modules with content
+        modules=$(find . -maxdepth 1 -type d -not -path "." -not -path "./.git" | sed 's|^\./||' | sort)
+        
+        # Loop through each module to create/update main pages and add to Home
+        for module in $modules; do
+          echo "Processing module index: $module"
+          
+          # Only add module to home page if it has content
+          if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+            echo "- [$module]($module)" >> Home.md
+            
+            # Create the module index page
+            echo "# $module Help Files" > "$module.md"
+            echo "" >> "$module.md"
+            
+            # Add links to each project
+            for projectDir in "$module"/*/; do
+              if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+                projectname=$(basename "$projectDir")
+                echo "  Adding project to index: $projectname"
+                echo "## $projectname" >> "$module.md"
+                
+                # Add links to each markdown file in the project
+                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+                  filename=$(basename "$mdfile")
+                  # Extract title from first heading in the file, or use filename if no heading
+                  title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+                done
+                
+                echo "" >> "$module.md"
+              fi
+            done
+          else
+            echo "  Module has no content, skipping"
+          fi
+        done
+        
+        # List generated files
+        echo "Generated wiki files:"
+        find . -type f -name "*.md" | sort
+        
+    - name: Commit and Push to Wiki
+      run: |
+        cd wiki
+        echo "Committing changes to wiki..."
+        
+        # Configure authentication for pushing
+        git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.wiki.git
+        
+        # Add all changes
+        git add .
+        
+        # Only commit if there are changes
+        if ! git diff --quiet --cached; then
+          git commit -m "Sync Help Markdown files to wiki - automated update"
+          # Push changes to the wiki repository
+          echo "Pushing changes to wiki repository..."
+          git push && echo "Wiki updated successfully!" || echo "Failed to push to wiki repository"
+        else
+          echo "No changes to commit"
+        fi
