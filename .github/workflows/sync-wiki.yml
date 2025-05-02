@@ -1,4 +1,4 @@
-name: Sync Help Markdown Files to Wiki
+name: Sync help Markdown Files to Wiki
 
 on:
   push:
@@ -27,10 +27,10 @@ jobs:
         pwd
         echo "Repository contents:"
         ls -la
-        echo "Help directories:"
-        find . -type d -path "*/Help" || echo "No Help directories found"
-        echo "Markdown files in Help directories:"
-        find . -type f -path "*/Help/*.md" || echo "No markdown files found"
+        echo "help directories:"
+        find . -type d -path "*/help" || echo "No help directories found"
+        echo "Markdown files in help directories:"
+        find . -type f -path "*/help/*.md" || echo "No markdown files found"
       
     - name: Set Up Git
       run: |
@@ -43,7 +43,7 @@ jobs:
         git clone https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.wiki.git wiki || echo "No wiki exists yet, creating new wiki"
         mkdir -p wiki
         
-    - name: Sync Help Markdown Files to Wiki
+    - name: Sync help Markdown Files to Wiki
       run: |
         echo "Starting sync process..."
         echo "Repository structure:"
@@ -56,7 +56,7 @@ jobs:
         # Define known module names - add all your actual modules here
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
-        # Process all markdown files in Help directories with specific handling for modules vs root projects
+        # Process all markdown files in help directories with specific handling for modules vs root projects
         echo "Processing markdown files..."
         
         # First handle projects under modules (standard hierarchy)
@@ -73,15 +73,15 @@ jobs:
                 mkdir -p "wiki/$module/$projectname"
                 
                 # Find and copy help markdown files for this project
-                if [ -d "$project/Help" ]; then
-                  echo "    Found Help directory"
-                  find "$project/Help" -name "*.md" -type f | while read src_file; do
+                if [ -d "$project/help" ]; then
+                  echo "    Found help directory"
+                  find "$project/help" -name "*.md" -type f | while read src_file; do
                     filename=$(basename "$src_file")
                     echo "    Copying $src_file to wiki/$module/$projectname/$filename"
                     cp "$src_file" "wiki/$module/$projectname/$filename" || echo "Failed to copy $src_file"
                   done
                 else
-                  echo "    No Help directory found in $project"
+                  echo "    No help directory found in $project"
                 fi
               fi
             done
@@ -110,15 +110,15 @@ jobs:
           mkdir -p "wiki/RootProjects/$dirname"
           
           # Find and copy help markdown files for this project
-          if [ -d "$rootdir/Help" ]; then
-            echo "    Found Help directory"
-            find "$rootdir/Help" -name "*.md" -type f | while read src_file; do
+          if [ -d "$rootdir/help" ]; then
+            echo "    Found help directory"
+            find "$rootdir/help" -name "*.md" -type f | while read src_file; do
               filename=$(basename "$src_file")
               echo "    Copying $src_file to wiki/RootProjects/$dirname/$filename"
               cp "$src_file" "wiki/RootProjects/$dirname/$filename" || echo "Failed to copy $src_file"
             done
           else
-            echo "    No Help directory found in $rootdir"
+            echo "    No help directory found in $rootdir"
           fi
         done
         
@@ -144,7 +144,7 @@ jobs:
             echo "- [$module]($module)" >> Home.md
             
             # Create the module index page
-            echo "# $module Help Files" > "$module.md"
+            echo "# $module help Files" > "$module.md"
             echo "" >> "$module.md"
             
             # Add links to each project
@@ -219,7 +219,7 @@ jobs:
         
         # Only commit if there are changes
         if ! git diff --quiet --cached; then
-          git commit -m "Sync Help Markdown files to wiki - automated update"
+          git commit -m "Sync help Markdown files to wiki - automated update"
           # Push changes to the wiki repository
           echo "Pushing changes to wiki repository..."
           git push && echo "Wiki updated successfully!" || echo "Failed to push to wiki repository"
