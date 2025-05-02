@@ -546,20 +546,26 @@ jobs:
           fi
           echo "::endgroup::"
 
-      - name: Create GitHub Pages Setup PR
+      - name: GitHub Pages Setup Instructions
         if: success()
         run: |
-          echo "::group::Setting up GitHub Pages"
-          # Check if GitHub Pages is already configured
-          if ! curl -s "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" | grep -q "source"; then
-            echo "Creating GitHub Pages configuration PR"
-            
-            # Create a branch for the PR
-            git checkout -b setup-github-pages
-            
-            # Create a GitHub workflow to deploy to Pages
-            mkdir -p .github/workflows
-            cat > .github/workflows/deploy-docs.yml << 'EOF'
+          echo "::group::GitHub Pages Setup Instructions"
+          echo "To set up GitHub Pages for your documentation, please follow these steps:"
+          echo ""
+          echo "1. Go to your repository on GitHub"
+          echo "2. Click on 'Settings'"
+          echo "3. Select 'Pages' from the left sidebar"
+          echo "4. Under 'Build and deployment', select:"
+          echo "   - Source: 'Deploy from a branch'"
+          echo "   - Branch: 'main'"
+          echo "   - Folder: '/docs'"
+          echo "5. Click 'Save'"
+          echo ""
+          echo "OR"
+          echo ""
+          echo "Create a new file at .github/workflows/deploy-docs.yml with the following content:"
+          echo ""
+          cat << 'EOF'
           name: Deploy Documentation to GitHub Pages
           on:
             push:
@@ -590,42 +596,14 @@ jobs:
                   uses: actions/configure-pages@v4
                 
                 - name: Upload artifact
-                  uses: actions/upload-pages-artifact@v2
+                  uses: actions/upload-pages-artifact@v1
                   with:
                     path: 'docs'
                 
                 - name: Deploy to GitHub Pages
                   id: deployment
-                  uses: actions/deploy-pages@v2
+                  uses: actions/deploy-pages@v1
           EOF
-            
-            # Commit and push the workflow file
-            git add .github/workflows/deploy-docs.yml
-            git commit -m "Add GitHub Pages deployment workflow"
-            git push -u origin setup-github-pages
-            
-            # Create PR using GitHub CLI if available, otherwise with curl
-            if command -v gh &> /dev/null; then
-              gh pr create --title "Setup GitHub Pages for Documentation" \
-                          --body "This PR adds a GitHub Actions workflow to deploy the documentation to GitHub Pages automatically." \
-                          --base main \
-                          --head setup-github-pages
-            else
-              # Create PR using curl and GitHub API
-              curl -X POST \
-                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/$GITHUB_REPOSITORY/pulls \
-                -d '{
-                  "title": "Setup GitHub Pages for Documentation",
-                  "body": "This PR adds a GitHub Actions workflow to deploy the documentation to GitHub Pages automatically.",
-                  "head": "setup-github-pages",
-                  "base": "main"
-                }'
-            fi
-          else
-            echo "GitHub Pages already configured"
-          fi
           echo "::endgroup::"
 
       - name: Output Documentation Summary
