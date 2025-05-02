@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Tools Documentation</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Documentation for admin tools">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/themes/vue.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
+  <!-- Add syntax highlighting -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs/themes/prism.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: 'Admin Tools',
+      repo: 'techjollof/MSAdminAssistTool',
+      loadSidebar: true,
+      auto2top: true,
+      subMaxLevel: 3,
+      search: {
+        maxAge: 86400000, // Expiration time, one day
+        paths: 'auto',
+        placeholder: 'Type to search',
+        noData: 'No results found',
+        depth: 6,
+        hideOtherSidebarContent: false
+      },
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next',
+        crossChapter: true,
+        crossChapterText: true,
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        errorText: 'Error',
+        successText: 'Copied'
+      },
+      plugins: [
+        function(hook) {
+          hook.doneEach(function() {
+            // Auto-update modification date on each page
+            var footer = document.createElement('footer');
+            footer.className = 'docs-footer';
+            footer.innerHTML = '<span>Last updated: ' + new Date().toISOString().split('T')[0] + '</span>';
+            document.body.appendChild(footer);
+          });
+        }
+      ]
+    }
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-powershell.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-yaml.min.js"></script>
+</body>
+</html>
