@@ -1,0 +1,5 @@
+2025-05-02 16:02:06 [Info] - Configuration successfully loaded from predefined config.
+2025-05-02 16:02:06 [Info] - Microsoft Exchange WebServices Module imported successfully
+2025-05-02 16:02:08 [Info] - Microsoft Graph Authentication (MSAL.PS) Module imported successfully
+2025-05-02 16:05:33 [Error] - AzureEWSApplicationClientId is null. Terminating script.
+2025-05-02 16:25:03 [Error] - AzureEWSApplicationClientId is null. Terminating script.
