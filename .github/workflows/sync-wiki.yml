@@ -229,11 +229,11 @@ jobs:
               projectDir="${projectDir%/}"  # remove trailing slash
               if [ -d "$projectDir" ]; then
                 projectname=$(basename "$projectDir")
-                helpDir="$projectDir/help"
+                helpDir=$(find "$projectDir" -maxdepth 1 -type d -iname "help" | head -n 1)
 
-                if [ -d "$helpDir" ] && [ "$(find "$helpDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+                if [ -n "$helpDir" ] && [ "$(find "$helpDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
                   echo "  Processing project under module: $projectname in $module"
-                  echo "    Found help directory"
+                  echo "    Found help directory: $helpDir"
                   
                   mkdir -p "wiki/$module/$projectname"
                   
