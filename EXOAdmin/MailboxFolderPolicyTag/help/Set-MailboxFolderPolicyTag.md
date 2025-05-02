@@ -1,5 +1,6 @@
 
-## 📄 MRM Retention Policy Tag Assignment to Folder
+# Set-MailboxFolderPolicyTag
+
 This document outlines the steps required to apply retention or archive policy tags to specific folders within a user’s mailbox or online archive using Exchange Online. This process involves configuring OAuth for secure access to Exchange Web Services (EWS), retrieving critical program parameters like the RetentionTag, RetentionFlags, and RetentionPeriod, and applying the correct policies to prevent or manage folder content retention.
 
 The MRM Retention Policy is used to control how emails are retained, archived, or deleted in a user's mailbox. The steps provided guide users through the configuration of Azure AD application for OAuth, retrieving necessary parameters using PowerShell and MFCMAPI, and applying retention tags to prevent specific folders from moving to archive, or to enforce deletion policies on specific folders.
@@ -158,13 +159,13 @@ ArchiveOrRetainAction = ArchiveAction
 Then run:
 
 ```powershell
-.\EWSMRMPolicyTagAssignment.ps1
+.\Set-MailboxFolderPolicyTag.ps1 -UserPredefinedConfigData
 ```
 
 ### Option 2 – Using Inline Parameters
 
 ```powershell
-.\EWSMRMPolicyTagAssignment.ps1 `
+.\Set-MailboxFolderPolicyTag.ps1 `
   -TargetFolderName "ValliPolicy" `
   -ArchiveOrRetentionTagRawRetentionId "11111111-1111-1111-1111-111111111111" `
   -RetentionFlagsValue 153 `
