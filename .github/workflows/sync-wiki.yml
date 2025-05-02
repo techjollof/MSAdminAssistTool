@@ -135,40 +135,79 @@ jobs:
         # Define known module names - make sure this matches the list in the previous step
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
+        # # Process standard modules first
+        # for module in $MODULES; do
+        #   echo "Processing module index: $module"
+          
+        #   # Only add module to home page if it has content
+        #   if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+        #     echo "- [$module]($module)" >> Home.md
+            
+        #     # Create the module index page
+        #     echo "# $module help Files" > "$module.md"
+        #     echo "" >> "$module.md"
+            
+        #     # Add links to each project
+        #     for projectDir in "$module"/*/; do
+        #       if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+        #         projectname=$(basename "$projectDir")
+        #         echo "  Adding project to index: $projectname"
+        #         echo "## $projectname" >> "$module.md"
+                
+        #         # Add links to each markdown file in the project
+        #         find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+        #           filename=$(basename "$mdfile")
+        #           # Extract title from first heading in the file, or use filename if no heading
+        #           title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+        #           echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+        #         done
+                
+        #         echo "" >> "$module.md"
+        #       fi
+        #     done
+        #   else
+        #     echo "  Module has no content, skipping"
+        #   fi
+        # done
+
         # Process standard modules first
         for module in $MODULES; do
           echo "Processing module index: $module"
           
+          # Ensure the module directory exists in the wiki
+          mkdir -p "wiki/$module"
+          
           # Only add module to home page if it has content
           if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
             echo "- [$module]($module)" >> Home.md
-            
+
             # Create the module index page
-            echo "# $module help Files" > "$module.md"
-            echo "" >> "$module.md"
-            
+            echo "# $module help Files" > "wiki/$module.md"
+            echo "" >> "wiki/$module.md"
+
             # Add links to each project
             for projectDir in "$module"/*/; do
               if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
                 projectname=$(basename "$projectDir")
                 echo "  Adding project to index: $projectname"
-                echo "## $projectname" >> "$module.md"
-                
+                echo "## $projectname" >> "wiki/$module.md"
+
                 # Add links to each markdown file in the project
                 find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
                   filename=$(basename "$mdfile")
                   # Extract title from first heading in the file, or use filename if no heading
                   title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+                  echo "- [$title]($module/$projectname/$filename)" >> "wiki/$module.md"
                 done
-                
-                echo "" >> "$module.md"
+
+                echo "" >> "wiki/$module.md"
               fi
             done
           else
             echo "  Module has no content, skipping"
           fi
         done
+
         
         # Add Root Projects section
         if [ -d "RootProjects" ] && [ "$(find "RootProjects" -type f -name "*.md" | wc -l)" -gt 0 ]; then
