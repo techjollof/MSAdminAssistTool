@@ -245,270 +245,90 @@ jobs:
         
         echo "Sync process completed successfully"
         
-    # - name: Generate Main Wiki Pages
-    #   run: |
-    #     cd wiki
-    #     echo "Generating wiki index pages..."
-        
-    #     # Create Home page that links to all modules
-    #     echo "# Admin Tools Wiki" > Home.md
-    #     echo "" >> Home.md
-    #     echo "## Admin Modules" >> Home.md
-        
-    #     # Define known module names - make sure this matches the list in the previous step
-    #     MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
-        
-    #     # Process standard modules first
-    #     for module in $MODULES; do
-    #       echo "Processing module index: $module"
-          
-    #       # Only add module to home page if it has content
-    #       if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-    #         echo "- [$module]($module)" >> Home.md
-            
-    #         # Create the module index page
-    #         # echo "# $module Help Files" > "$module.md"
-    #         echo "" >> "$module.md"
-            
-    #         # Add links to each project
-    #         for projectDir in "$module"/*/; do
-    #           if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-    #             projectname=$(basename "$projectDir")
-    #             echo "  Adding project to index: $projectname"
-    #             echo "## $projectname" >> "$module.md"
-                
-    #             # Add links to each markdown file in the project
-    #             find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-    #               filename=$(basename "$mdfile")
-    #               # Extract title from first heading in the file, or use filename if no heading
-    #               title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-    #               echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
-    #             done
-                
-    #             echo "" >> "$module.md"
-    #           fi
-    #         done
-    #       else
-    #         echo "  Module has no content, skipping"
-    #       fi
-    #     done
-        
-    #     # Add Root Projects section
-    #     if [ -d "RootProjects" ] && [ "$(find "RootProjects" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-    #       echo "" >> Home.md
-    #       echo "## Independent Projects" >> Home.md
-    #       echo "- [Independent Projects](RootProjects)" >> Home.md
-          
-    #       # Create RootProjects index page
-    #       echo "# Independent Projects" > "RootProjects.md"
-    #       echo "" >> "RootProjects.md"
-    #       echo "These projects exist at the root level and are not part of a specific module." >> "RootProjects.md"
-    #       echo "" >> "RootProjects.md"
-          
-    #       # Add each root project
-    #       for projectDir in "RootProjects"/*/; do
-    #         if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-    #           projectname=$(basename "$projectDir")
-    #           echo "  Adding root project to index: $projectname"
-    #           echo "## $projectname" >> "RootProjects.md"
-              
-    #           # Add links to each markdown file in the project
-    #           find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-    #             filename=$(basename "$mdfile")
-    #             # Extract title from first heading in the file, or use filename if no heading
-    #             title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-    #             echo "- [$title](RootProjects/$projectname/$filename)" >> "RootProjects.md"
-    #           done
-              
-    #           echo "" >> "RootProjects.md"
-    #         fi
-    #       done
-    #     fi
-        
-    #     # List generated files
-    #     echo "Generated wiki files:"
-    #     find . -type f -name "*.md" | sort
-    
-
-    # - name: Generate Structured Wiki Pages
-    #   run: |
-    #     cd wiki
-    #     echo "Generating hierarchical wiki pages..."
-        
-    #     # Create Home page with module links
-    #     echo "# Admin Tools Wiki" > Home.md
-    #     echo "" >> Home.md
-    #     echo "## Modules" >> Home.md
-        
-    #     MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
-        
-    #     # Process each module
-    #     for module in $MODULES; do
-    #       if [ -d "$module" ]; then
-    #         echo "Building structure for module: $module"
-            
-    #         # Add module to Home page
-    #         echo "- [$module]($module/Index)" >> Home.md
-            
-    #         # Create module index page
-    #         mkdir -p "$module"
-    #         echo "# $module Projects" > "$module/Index.md"
-    #         echo "" >> "$module/Index.md"
-            
-    #         # Process each project in module
-    #         for projectDir in "$module"/*/; do
-    #           if [ -d "$projectDir" ]; then
-    #             projectname=$(basename "$projectDir")
-    #             echo "  Adding project: $projectname"
-                
-    #             # Add project to module index
-    #             echo "## [$projectname]($module/$projectname/Index)" >> "$module/Index.md"
-    #             echo "" >> "$module/Index.md"
-                
-    #             # Create project index page
-    #             mkdir -p "$module/$projectname"
-    #             echo "# $projectname Documentation" > "$module/$projectname/Index.md"
-    #             echo "" >> "$module/$projectname/Index.md"
-                
-    #             # Add help files to project index
-    #             find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-    #               filename=$(basename "$mdfile")
-    #               title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-    #               echo "- [$title]($module/$projectname/$filename)" >> "$module/$projectname/Index.md"
-    #               cp "$mdfile" "$module/$projectname/$filename"
-    #             done
-    #           fi
-    #         done
-    #       fi
-    #     done
-        
-    #     # Process Root Projects
-    #     if [ -d "RootProjects" ]; then
-    #       echo "" >> Home.md
-    #       echo "## Independent Projects" >> Home.md
-    #       echo "- [Independent Projects](RootProjects/Index)" >> Home.md
-          
-    #       mkdir -p "RootProjects"
-    #       echo "# Independent Projects" > "RootProjects/Index.md"
-    #       echo "" >> "RootProjects/Index.md"
-          
-    #       for projectDir in "RootProjects"/*/; do
-    #         if [ -d "$projectDir" ]; then
-    #           projectname=$(basename "$projectDir")
-    #           echo "Adding root project: $projectname"
-              
-    #           # Add to root projects index
-    #           echo "## [$projectname](RootProjects/$projectname/Index)" >> "RootProjects/Index.md"
-    #           echo "" >> "RootProjects/Index.md"
-              
-    #           # Create project index
-    #           mkdir -p "RootProjects/$projectname"
-    #           echo "# $projectname Documentation" > "RootProjects/$projectname/Index.md"
-    #           echo "" >> "RootProjects/$projectname/Index.md"
-              
-    #           # Add help files
-    #           find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-    #             filename=$(basename "$mdfile")
-    #             title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-    #             echo "- [$title](RootProjects/$projectname/$filename)" >> "RootProjects/$projectname/Index.md"
-    #             cp "$mdfile" "RootProjects/$projectname/$filename"
-    #           done
-    #         fi
-    #       done
-    #     fi
-        
-    #     echo "Generated wiki structure:"
-    #     find . -type f -name "*.md" | sort
-    
-
-    - name: Generate Wiki Pages with Logical Grouping
+    - name: Generate Main Wiki Pages
       run: |
         cd wiki
-        echo "Generating wiki pages with logical grouping..."
+        echo "Generating wiki index pages..."
         
-        # Create Home page with grouped links
+        # Create Home page that links to all modules
         echo "# Admin Tools Wiki" > Home.md
         echo "" >> Home.md
-        echo "## Modules" >> Home.md
-        echo "" >> Home.md
+        echo "## Admin Modules" >> Home.md
         
+        # Define known module names - make sure this matches the list in the previous step
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
-        # Process modules
+        # Process standard modules first
         for module in $MODULES; do
-          if [ -d "../$module" ]; then
-            echo "Processing module: $module"
+          echo "Processing module index: $module"
+          
+          # Only add module to home page if it has content
+          if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+            echo "- [$module]($module)" >> Home.md
             
-            # Add module section to Home
-            echo "### $module" >> Home.md
+            # Create the module index page
+            # echo "# $module Help Files" > "$module.md"
+            echo "" >> "$module.md"
             
-            # Process projects
-            for projectDir in "../$module"/*/; do
-              if [ -d "$projectDir" ]; then
+            # Add links to each project
+            for projectDir in "$module"/*/; do
+              if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
                 projectname=$(basename "$projectDir")
-                helpDir=$(find "$projectDir" -maxdepth 1 -type d -iname "help" | head -n 1)
+                echo "  Adding project to index: $projectname"
+                echo "## $projectname" >> "$module.md"
                 
-                if [ -n "$helpDir" ]; then
-                  # Create combined project page
-                  pageName="${module}_${projectname}"
-                  echo "# $module - $projectname" > "${pageName}.md"
-                  echo "" >> "${pageName}.md"
-                  
-                  # Add to Home
-                  echo "- [$projectname]($pageName)" >> Home.md
-                  
-                  # Process help files
-                  find "$helpDir" -name "*.md" -type f | sort | while read mdfile; do
-                    filename=$(basename "$mdfile")
-                    title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                    
-                    # Add section for each help file
-                    echo "## $title" >> "${pageName}.md"
-                    cat "$mdfile" | grep -v '^#' >> "${pageName}.md"
-                    echo "" >> "${pageName}.md"
-                  done
-                fi
+                # Add links to each markdown file in the project
+                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+                  filename=$(basename "$mdfile")
+                  # Extract title from first heading in the file, or use filename if no heading
+                  title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+                done
+                
+                echo "" >> "$module.md"
               fi
             done
-            echo "" >> Home.md
+          else
+            echo "  Module has no content, skipping"
           fi
         done
         
-        # Process root projects
-        echo "## Independent Projects" >> Home.md
-        echo "" >> Home.md
-        
-        find .. -maxdepth 1 -type d -not -path "." -not -path "../wiki" -not -path "../.git" -not -path "../.github" | while read rootdir; do
-          rootdir="${rootdir#../}"
-          if ! echo "$MODULES" | grep -q -w "$rootdir"; then
-            helpDir=$(find "../$rootdir" -maxdepth 1 -type d -iname "help" | head -n 1)
-            if [ -n "$helpDir" ]; then
-              echo "Processing root project: $rootdir"
+        # Add Root Projects section
+        if [ -d "RootProjects" ] && [ "$(find "RootProjects" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+          echo "" >> Home.md
+          echo "## Independent Projects" >> Home.md
+          echo "- [Independent Projects](RootProjects)" >> Home.md
+          
+          # Create RootProjects index page
+          echo "# Independent Projects" > "RootProjects.md"
+          echo "" >> "RootProjects.md"
+          echo "These projects exist at the root level and are not part of a specific module." >> "RootProjects.md"
+          echo "" >> "RootProjects.md"
+          
+          # Add each root project
+          for projectDir in "RootProjects"/*/; do
+            if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+              projectname=$(basename "$projectDir")
+              echo "  Adding root project to index: $projectname"
+              echo "## $projectname" >> "RootProjects.md"
               
-              # Create combined page
-              echo "# $rootdir" > "${rootdir}.md"
-              echo "" >> "${rootdir}.md"
-              
-              # Add to Home
-              echo "- [$rootdir]($rootdir)" >> Home.md
-              
-              # Process help files
-              find "$helpDir" -name "*.md" -type f | sort | while read mdfile; do
+              # Add links to each markdown file in the project
+              find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
                 filename=$(basename "$mdfile")
+                # Extract title from first heading in the file, or use filename if no heading
                 title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                
-                echo "## $title" >> "${rootdir}.md"
-                cat "$mdfile" | grep -v '^#' >> "${rootdir}.md"
-                echo "" >> "${rootdir}.md"
+                echo "- [$title](RootProjects/$projectname/$filename)" >> "RootProjects.md"
               done
+              
+              echo "" >> "RootProjects.md"
             fi
-          fi
-        done
+          done
+        fi
         
+        # List generated files
         echo "Generated wiki files:"
-        ls -la
-
-
+        find . -type f -name "*.md" | sort
+        
     - name: Commit and Push to Wiki
       run: |
         cd wiki
