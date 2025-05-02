@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - '**/Help/**/*.md'
+      - '**/help/**/*.md'
       - '.github/workflows/sync-wiki.yml'  # Allow the workflow itself to trigger
 
 jobs:
