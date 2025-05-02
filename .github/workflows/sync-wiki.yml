@@ -1,11 +1,11 @@
-name: Sync help Markdown Files to Wiki
+name: Sync Help Markdown Files to Wiki
 
 on:
   push:
     branches:
       - main
     paths:
-      - '**/help/**/*.md'
+      - '**/Help/**/*.md'
       - '.github/workflows/sync-wiki.yml'  # Allow the workflow itself to trigger
 
 jobs:
@@ -27,10 +27,10 @@ jobs:
         pwd
         echo "Repository contents:"
         ls -la
-        echo "help directories:"
-        find . -type d -path "*/help" || echo "No help directories found"
-        echo "Markdown files in help directories:"
-        find . -type f -path "*/help/*.md" || echo "No markdown files found"
+        echo "Help directories:"
+        find . -type d -path "*/Help" || echo "No Help directories found"
+        echo "Markdown files in Help directories:"
+        find . -type f -path "*/Help/*.md" || echo "No markdown files found"
       
     - name: Set Up Git
       run: |
@@ -43,7 +43,7 @@ jobs:
         git clone https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.wiki.git wiki || echo "No wiki exists yet, creating new wiki"
         mkdir -p wiki
         
-    - name: Sync help Markdown Files to Wiki
+    - name: Sync Help Markdown Files to Wiki
       run: |
         echo "Starting sync process..."
         echo "Repository structure:"
@@ -56,7 +56,7 @@ jobs:
         # Define known module names - add all your actual modules here
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
-        # Process all markdown files in help directories with specific handling for modules vs root projects
+        # Process all markdown files in Help directories with specific handling for modules vs root projects
         echo "Processing markdown files..."
         
         # First handle projects under modules (standard hierarchy)
@@ -136,38 +136,80 @@ jobs:
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
         # Process standard modules first
-        for module in $MODULES; do
-          echo "Processing module index: $module"
+        # for module in $MODULES; do
+        #   echo "Processing module index: $module"
           
-          # Only add module to home page if it has content
-          if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-            echo "- [$module]($module)" >> Home.md
+        #   # Only add module to home page if it has content
+        #   if [ -d "$module" ] && [ "$(find "$module" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+        #     echo "- [$module]($module)" >> Home.md
             
-            # Create the module index page
-            echo "# $module help Files" > "$module.md"
-            echo "" >> "$module.md"
+        #     # Create the module index page
+        #     echo "# $module help Files" > "$module.md"
+        #     echo "" >> "$module.md"
             
-            # Add links to each project
-            for projectDir in "$module"/*/; do
-              if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
-                projectname=$(basename "$projectDir")
-                echo "  Adding project to index: $projectname"
-                echo "## $projectname" >> "$module.md"
+        #     # Add links to each project
+        #     for projectDir in "$module"/*/; do
+        #       if [ -d "$projectDir" ] && [ "$(find "$projectDir" -type f -name "*.md" | wc -l)" -gt 0 ]; then
+        #         projectname=$(basename "$projectDir")
+        #         echo "  Adding project to index: $projectname"
+        #         echo "## $projectname" >> "$module.md"
                 
-                # Add links to each markdown file in the project
-                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-                  filename=$(basename "$mdfile")
-                  # Extract title from first heading in the file, or use filename if no heading
-                  title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                  echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+        #         # Add links to each markdown file in the project
+        #         find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+        #           filename=$(basename "$mdfile")
+        #           # Extract title from first heading in the file, or use filename if no heading
+        #           title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+        #           echo "- [$title]($module/$projectname/$filename)" >> "$module.md"
+        #         done
+                
+        #         echo "" >> "$module.md"
+        #       fi
+        #     done
+        #   else
+        #     echo "  Module has no content, skipping"
+        #   fi
+        # done
+
+
+        # Process all markdown files in help directories with specific handling for modules vs root projects
+        echo "Processing markdown files..."
+
+        # First handle projects under modules (standard hierarchy)
+        for module in $MODULES; do
+            if [ -d "$module" ]; then
+                echo "Processing module: $module"
+
+                # Iterate over subprojects in the module
+                for project in "$module"/*/; do
+                    # Normalize the project path (remove trailing slash)
+                    project=$(echo "$project" | sed 's|/$||')
+
+                    if [ -d "$project" ]; then
+                        projectname=$(basename "$project")
+                        echo "  Processing project under module: $projectname in $module"
+
+                        # Create project directory in wiki
+                        mkdir -p "wiki/$module/$projectname"
+
+                        # Log the path being checked for the help directory
+                        echo "    Checking for help directory at: $project/help"
+
+                        # Find and copy help markdown files for this project
+                        if [ -d "$project/help" ]; then
+                            echo "    Found help directory"
+                            find "$project/help" -name "*.md" -type f | while read src_file; do
+                                filename=$(basename "$src_file")
+                                echo "    Copying $src_file to wiki/$module/$projectname/$filename"
+                                cp "$src_file" "wiki/$module/$projectname/$filename" || echo "Failed to copy $src_file"
+                            done
+                        else
+                            echo "    No help directory found in $project"
+                        fi
+                    fi
                 done
-                
-                echo "" >> "$module.md"
-              fi
-            done
-          else
-            echo "  Module has no content, skipping"
-          fi
+            else
+                echo "Module directory not found: $module"
+            fi
         done
         
         # Add Root Projects section
@@ -219,7 +261,7 @@ jobs:
         
         # Only commit if there are changes
         if ! git diff --quiet --cached; then
-          git commit -m "Sync help Markdown files to wiki - automated update"
+          git commit -m "Sync Help Markdown files to wiki - automated update"
           # Push changes to the wiki repository
           echo "Pushing changes to wiki repository..."
           git push && echo "Wiki updated successfully!" || echo "Failed to push to wiki repository"
