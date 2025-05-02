@@ -1,6 +1,6 @@
 name: Setup Docsify Documentation Structure
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual triggering
     inputs:
       theme:
         description: 'Docsify theme to use (vue, buble, dark, pure)'
@@ -8,7 +8,7 @@ on:
         default: 'vue'
   push:
     branches: [main]
-    paths: ['**/[hH][eE][lL][pP]/**']
+    paths: ['**/[hH][eE][lL][pP]/**']  # Trigger on any changes in help directories, case-insensitive
 
 env:
   MODULES: "EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Fetch all history for proper version tracking
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -31,6 +31,7 @@ jobs:
         id: create_structure
         run: |
           echo "::group::Setting up base directories"
+          # Create base directories
           mkdir -p docs
           mkdir -p docs/assets/images
           mkdir -p docs/assets/css
@@ -43,14 +44,17 @@ jobs:
           echo "::endgroup::"
           
           echo "::group::Installing Docsify CLI"
+          # Initialize Docsify
           npm install -g docsify-cli
           docsify init ./docs
           echo "::endgroup::"
           
+          # Determine theme
           THEME="${{ github.event.inputs.theme || 'vue' }}"
           echo "Using theme: $THEME"
           
           echo "::group::Creating HTML template"
+          # Create customized index.html file
           cat > docs/index.html << EOF
           <!DOCTYPE html>
           <html>
@@ -62,6 +66,7 @@ jobs:
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/themes/$THEME.css">
             <link rel="stylesheet" href="assets/css/custom.css">
+            <!-- Add syntax highlighting -->
             <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/prismjs/themes/prism.css">
           </head>
           <body>
@@ -74,7 +79,7 @@ jobs:
                 auto2top: true,
                 subMaxLevel: 3,
                 search: {
-                  maxAge: 86400000,
+                  maxAge: 86400000, // Expiration time, one day
                   paths: 'auto',
                   placeholder: 'Type to search',
                   noData: 'No results found',
@@ -95,6 +100,7 @@ jobs:
                 plugins: [
                   function(hook) {
                     hook.doneEach(function() {
+                      // Auto-update modification date on each page
                       var footer = document.createElement('footer');
                       footer.className = 'docs-footer';
                       footer.innerHTML = '<span>Last updated: ' + new Date().toISOString().split('T')[0] + '</span>';
@@ -118,29 +124,37 @@ jobs:
           echo "::endgroup::"
           
           echo "::group::Creating custom CSS"
+          # Create custom CSS file
           cat > docs/assets/css/custom.css << 'EOF'
+          /* Custom styles for the documentation */
           :root {
             --theme-color: #42b983;
             --heading-color: #34495e;
             --text-color: #34495e;
             --sidebar-background: #f8f8f8;
           }
+
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           }
+
           .sidebar {
             background-color: var(--sidebar-background);
             padding: 1rem;
           }
+
           .content {
             padding: 2rem;
           }
+
           h1, h2, h3, h4, h5, h6 {
             color: var(--heading-color);
           }
+
           .markdown-section a {
             color: var(--theme-color);
           }
+
           .docs-footer {
             text-align: center;
             margin-top: 40px;
@@ -152,155 +166,457 @@ jobs:
           EOF
           echo "::endgroup::"
           
-          echo "::group::Creating initial sidebar and home page"
+          echo "::group::Creating sidebar and home page"
+          # Create initial sidebar
           cat > docs/_sidebar.md << 'EOF'
           - [Home](/)
-          - [Getting Started](/getting-started/)
           EOF
           
+          # Add module sections to sidebar
           for module in ${{ env.MODULES }}; do
             echo "- **$module**" >> docs/_sidebar.md
           done
           
-          cat > docs/README.md << EOF
+          # Create home page
+          cat > docs/README.md << 'EOF'
           # Admin Tools Documentation
-          Welcome to the Admin Tools documentation site.
+
+          Welcome to the Admin Tools documentation site. This documentation is automatically generated from the project repositories.
+
           ## Available Modules
+
           EOF
           
+          # Add module listings to home page
           for module in ${{ env.MODULES }}; do
             echo "- [$module](/$module/)" >> docs/README.md
           done
           
           cat >> docs/README.md << 'EOF'
+
           ## Quick Links
+
           - [Getting Started](/getting-started)
+          
           ## About This Documentation
-          This documentation is built using [Docsify](https://docsify.js.org/).
+
+          This documentation is built using [Docsify](https://docsify.js.org/) and is automatically updated when changes are made to the help directories in the source repositories.
           EOF
           
+          # Create getting started page
           mkdir -p docs/getting-started
           cat > docs/getting-started/README.md << 'EOF'
           # Getting Started
-          Welcome to the Admin Tools documentation.
+
+          Welcome to the Admin Tools documentation. This guide will help you get started with using the various admin tools.
+
           ## Installation
-          Instructions for installing the admin tools.
+
+          Instructions for installing the admin tools will be provided here.
+
           ## Configuration
+
           Configuration details will be provided here.
           EOF
+          echo "- [Getting Started](/getting-started/)" >> docs/_sidebar.md
           echo "::endgroup::"
+
+      # - name: Migrate Existing Markdown Files
+      #   id: migrate_markdown
+      #   run: |
+      #     echo "::group::Finding and processing help directories"
+          
+      #     # Initialize success flag
+      #     MIGRATION_SUCCESS=true
+          
+      #     # Process modules
+      #     for module in ${{ env.MODULES }}; do
+      #       if [ -d "$module" ]; then
+      #         # Create module README
+      #         echo "# $module Documentation" > "docs/$module/README.md"
+      #         echo "" >> "docs/$module/README.md" 
+      #         echo "## Available Tools" >> "docs/$module/README.md"
+              
+      #         echo "Processing module: $module"
+              
+      #         # Process projects within the module
+      #         for project_dir in "$module"/*/; do
+      #           if [ -d "$project_dir" ]; then
+      #             project=$(basename "$project_dir")
+      #             echo "  - Processing project: $project"
+                  
+      #             # Find help directory case-insensitively
+      #         help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
+      #             if [ -d "$help_dir" ]; then
+      #               echo "    Found help directory: $help_dir"
+                    
+      #               # Create project directory and README
+      #               mkdir -p "docs/$module/$project"
+      #               echo "# $project" > "docs/$module/$project/README.md"
+      #               echo "" >> "docs/$module/$project/README.md"
+      #               echo "Documentation for the $project tool in the $module module." >> "docs/$module/$project/README.md"
+                    
+      #               # Add project to module README
+      #               echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
+                    
+      #               # Add project to sidebar if not already there
+      #               if ! grep -q "$module/$project" docs/_sidebar.md; then
+      #                 sed -i "/$module/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
+      #               fi
+                    
+      #               # Find and process markdown files
+      #               MD_FILES_COUNT=0
+      #               echo "    Looking for markdown files in $help_dir"
+                    
+      #               # Process markdown files
+      #               find "$help_dir" -name "*.md" -type f | while read file; do
+      #                 filename=$(basename "$file")
+      #                 basename="${filename%.*}"
+                      
+      #                 echo "      Processing file: $filename"
+                      
+      #                 # Process markdown content - fix internal links and any other transformations
+      #                 awk '
+      #                 BEGIN { in_code_block = 0 }
+      #                 /^```/ { in_code_block = !in_code_block; print; next }
+      #                 in_code_block { print; next }
+      #                 /\[.*\]\((?!http|https|ftp|mailto)/ { 
+      #                   gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$module'/'$project'/\\2)") 
+      #                 }
+      #                 { print }
+      #                 ' "$file" > "docs/$module/$project/$filename"
+                      
+      #                 # Add file to project sidebar
+      #                 if [ "$basename" != "README" ]; then
+      #                   if ! grep -q "$basename" docs/_sidebar.md; then
+      #                     sed -i "/$module\/$project/a \ \ \ \ - [$basename](/$module/$project/$filename)" docs/_sidebar.md
+      #                   fi
+      #                 fi
+                      
+      #                 MD_FILES_COUNT=$((MD_FILES_COUNT + 1))
+      #               done
+                    
+      #               if [ $MD_FILES_COUNT -eq 0 ]; then
+      #                 echo "    WARNING: No markdown files found in $help_dir"
+      #                 # Add placeholder documentation if no markdown files found
+      #                 echo "No documentation available yet. Please add markdown files to the help directory." >> "docs/$module/$project/README.md"
+      #               else
+      #                 echo "    Added $MD_FILES_COUNT markdown files from $help_dir"
+      #               fi
+      #             else
+      #               echo "    WARNING: No help directory found for $project"
+      #               # Create placeholder for projects without help directory
+      #               mkdir -p "docs/$module/$project"
+      #               echo "# $project" > "docs/$module/$project/README.md"
+      #               echo "" >> "docs/$module/$project/README.md"
+      #               echo "Documentation for this tool is not available yet." >> "docs/$module/$project/README.md"
+                    
+      #               # Add to sidebar
+      #               if ! grep -q "$module/$project" docs/_sidebar.md; then
+      #                 sed -i "/$module/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
+      #               fi
+      #             fi
+      #           fi
+      #         done
+      #       else
+      #         echo "WARNING: Module directory $module not found"
+      #         mkdir -p "docs/$module"
+      #         echo "# $module Documentation" > "docs/$module/README.md"
+      #         echo "" >> "docs/$module/README.md"
+      #         echo "This module does not have any documented tools yet." >> "docs/$module/README.md"
+      #       fi
+      #     done
+          
+      #     # Process root-level projects that might not be in modules
+      #     echo "Looking for projects at the root level..."
+      #     for dir in */; do
+      #       dirname=$(basename "$dir")
+      #       # Skip if it's a module or a special directory
+      #       if ! echo "${{ env.MODULES }} docs .git .github" | grep -qw "$dirname"; then
+      #         echo "Processing root project: $dirname"
+      #         # Find help directory case-insensitively
+      #         help_dir=$(find "$dirname" -maxdepth 1 -type d -iname "help" | head -n 1)
+              
+      #         if [ -d "$help_dir" ]; then
+      #           echo "  Found help directory: $help_dir"
+                
+      #           # Create project directory
+      #           mkdir -p "docs/$dirname"
+      #           echo "# $dirname Documentation" > "docs/$dirname/README.md"
+                
+      #           # Add to sidebar
+      #           if ! grep -q "$dirname" docs/_sidebar.md; then
+      #             echo "- **$dirname**" >> docs/_sidebar.md
+      #             echo "  - [Overview](/$dirname/)" >> docs/_sidebar.md
+      #           fi
+                
+      #           # Process markdown files
+      #           find "$help_dir" -name "*.md" -type f | while read file; do
+      #             filename=$(basename "$file")
+      #             basename="${filename%.*}"
+                  
+      #             echo "    Processing file: $filename"
+                  
+      #             # Process markdown content
+      #             awk '
+      #             BEGIN { in_code_block = 0 }
+      #             /^```/ { in_code_block = !in_code_block; print; next }
+      #             in_code_block { print; next }
+      #             /\[.*\]\((?!http|https|ftp|mailto)/ { 
+      #               gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$dirname'/\\2)") 
+      #             }
+      #             { print }
+      #             ' "$file" > "docs/$dirname/$filename"
+                  
+      #             # Add to sidebar
+      #             if [ "$basename" != "README" ]; then
+      #               if ! grep -q "$basename" docs/_sidebar.md; then
+      #                 sed -i "/$dirname\/\)/a \ \ - [$basename](/$dirname/$filename)" docs/_sidebar.md
+      #               fi
+      #             fi
+      #           done
+      #         fi
+      #       fi
+      #     done
+          
+      #     echo "::endgroup::"
+          
+      #     # Add special sections to sidebar
+      #     echo "- **Resources**" >> docs/_sidebar.md
+      #     echo "  - [FAQ](/resources/faq)" >> docs/_sidebar.md
+          
+      #     # Create resources section
+      #     mkdir -p docs/resources
+      #     cat > docs/resources/faq.md << 'EOF'
+      #     # Frequently Asked Questions
+
+      #     This page contains frequently asked questions about the admin tools.
+
+      #     ## General Questions
+
+      #     ### How do I report an issue?
+
+      #     You can report issues through the GitHub repository issue tracker.
+
+      #     ### How do I contribute to documentation?
+
+      #     To contribute to the documentation, add or edit markdown files in the `help` directory of the relevant project.
+      #     EOF
+          
+      #     echo "::set-output name=migration_status::$MIGRATION_SUCCESS"
+
+
 
       - name: Migrate Existing Markdown Files
         id: migrate_markdown
         run: |
-          echo "::group::Initializing fresh sidebar"
-          cat > docs/_sidebar.md << 'EOF'
-          - [Home](/)
-          - [Getting Started](/getting-started/)
-          EOF
-          for module in ${{ env.MODULES }}; do
-            echo "- **$module**" >> docs/_sidebar.md
-          done
-          echo "::endgroup::"
-          
-          echo "::group::Processing help directories"
+          echo "::group::Finding and processing help directories"
+
+          # Initialize success flag
           MIGRATION_SUCCESS=true
-          
+
+          # Process modules
           for module in ${{ env.MODULES }}; do
             if [ -d "$module" ]; then
+              # Create module README
               echo "# $module Documentation" > "docs/$module/README.md"
-              echo "" >> "docs/$module/README.md" 
+              echo "" >> "docs/$module/README.md"
               echo "## Available Tools" >> "docs/$module/README.md"
-              
+
               echo "Processing module: $module"
-              
+
+              # Add module to sidebar if not already there
+              if ! grep -q "**$module" docs/_sidebar.md; then
+                echo "- **$module**" >> docs/_sidebar.md
+              fi
+
+              # Process projects within the module
               for project_dir in "$module"/*/; do
                 if [ -d "$project_dir" ]; then
                   project=$(basename "$project_dir")
                   echo "  - Processing project: $project"
-                  
+
+                  # Find help directory case-insensitively
                   help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
                   if [ -d "$help_dir" ]; then
                     echo "    Found help directory: $help_dir"
-                    
+
+                    # Create project directory and README
                     mkdir -p "docs/$module/$project"
                     echo "# $project" > "docs/$module/$project/README.md"
                     echo "" >> "docs/$module/$project/README.md"
-                    echo "Documentation for the $project tool." >> "docs/$module/$project/README.md"
-                    
+                    echo "Documentation for the $project tool in the $module module." >> "docs/$module/$project/README.md"
+
+                    # Add project to module README
                     echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
-                    
-                    if ! grep -q "^- \[$project\](/$module/$project/)" docs/_sidebar.md; then
-                      sed -i "/- \*\*$module\*\*/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
+
+                    # Add project to sidebar if not already there
+                    if ! grep -q "$module/$project" docs/_sidebar.md; then
+                      sed -i "/$module/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
                     fi
-                    
+
+                    # Find and process markdown files
                     MD_FILES_COUNT=0
+                    echo "    Looking for markdown files in $help_dir"
+
+                    # Process markdown files
                     find "$help_dir" -name "*.md" -type f | while read file; do
                       filename=$(basename "$file")
                       basename="${filename%.*}"
-                      
+
+                      echo "      Processing file: $filename"
+
+                      # Process markdown content - fix internal links and any other transformations
                       awk '
                       BEGIN { in_code_block = 0 }
                       /^```/ { in_code_block = !in_code_block; print; next }
                       in_code_block { print; next }
-                      /\[.*\]\((?!http|https|ftp|mailto)/ { 
-                        gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$module'/'$project'/\\2)") 
+                      /$$
+                        .*
+                        $$\((?!http|https|ftp|mailto)/ {
+                                          gsub(/$$
+                        ([^]]*)
+                        $$$(?!http|https|ftp|mailto)([^)]*)$/, "[\\1](/'\$module'/'\$project'/\\2)")
                       }
                       { print }
-                      ' "$file" > "docs/$module/$project/$filename"
-                      
-                      if [ "$basename" != "README" ]; then
-                        if ! grep -q "^- \[$basename\](/$module/$project/$filename)" docs/_sidebar.md; then
-                          sed -i "/- \[$project\](/$module/$project\//a \ \ \ \ - [$basename](/$module/$project/$filename)" docs/_sidebar.md
+                      ' "\$file" > "docs/\$module/\$project/\$filename"
+
+                      # Add file to project sidebar if not already there
+                      if [ "\$basename" != "README" ]; then
+                        if ! grep -q "\$basename" docs/_sidebar.md; then
+                          sed -i "/\$module\/\$project/a \ \ \ \ - [\$basename](/\$module/\$project/$filename)" docs/_sidebar.md
                         fi
                       fi
-                      
+
                       MD_FILES_COUNT=$((MD_FILES_COUNT + 1))
                     done
-                    
-                    if [ $MD_FILES_COUNT -eq 0 ]; then
-                      echo "No documentation available yet." >> "docs/$module/$project/README.md"
+
+                    if [ \$MD_FILES_COUNT -eq 0 ]; then
+                      echo "    WARNING: No markdown files found in \$help_dir"
+                      # Add placeholder documentation if no markdown files found
+                      echo "No documentation available yet. Please add markdown files to the help directory." >> "docs/\$module/\$project/README.md"
+                    else
+                      echo "    Added \$MD_FILES_COUNT markdown files from \$help_dir"
                     fi
                   else
-                    mkdir -p "docs/$module/$project"
-                    echo "# $project" > "docs/$module/$project/README.md"
-                    echo "Documentation not available yet." >> "docs/$module/$project/README.md"
-                    
-                    if ! grep -q "^- \[$project\](/$module/$project/)" docs/_sidebar.md; then
-                      sed -i "/- \*\*$module\*\*/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
+                    echo "    WARNING: No help directory found for \$project"
+                    # Create placeholder for projects without help directory
+                    mkdir -p "docs/\$module/\$project"
+                    echo "# \$project" > "docs/\$module/\$project/README.md"
+                    echo "" >> "docs/\$module/\$project/README.md"
+                    echo "Documentation for this tool is not available yet." >> "docs/\$module/\$project/README.md"
+
+                    # Add to sidebar if not already there
+                    if ! grep -q "\$module/\$project" docs/_sidebar.md; then
+                      sed -i "/\$module/a \ \ - [\$project](/\$module/\$project/)" docs/_sidebar.md
                     fi
                   fi
                 fi
               done
             else
-              mkdir -p "docs/$module"
-              echo "# $module Documentation" > "docs/$module/README.md"
-              echo "No documented tools yet." >> "docs/$module/README.md"
+              echo "WARNING: Module directory \$module not found"
+              mkdir -p "docs/\$module"
+              echo "# \$module Documentation" > "docs/\$module/README.md"
+              echo "" >> "docs/\$module/README.md"
+              echo "This module does not have any documented tools yet." >> "docs/\$module/README.md"
             fi
           done
-          
-          echo "- **Resources**" >> docs/_sidebar.md
-          echo "  - [FAQ](/resources/faq)" >> docs/_sidebar.md
-          
-          mkdir -p docs/resources
-          cat > docs/resources/faq.md << 'EOF'
-          # Frequently Asked Questions
-          ## General Questions
-          ### How do I report an issue?
-          Through the GitHub repository issue tracker.
-          EOF
-          
-          echo "::set-output name=migration_status::$MIGRATION_SUCCESS"
+
+          # Process root-level projects that might not be in modules
+          echo "Looking for projects at the root level..."
+          for dir in */; do
+            dirname=\$(basename "\$dir")
+            # Skip if it's a module or a special directory
+            if ! echo "\${{ env.MODULES }} docs .git .github" | grep -qw "\$dirname"; then
+              echo "Processing root project: \$dirname"
+              # Find help directory case-insensitively
+              help_dir=\$(find "\$dirname" -maxdepth 1 -type d -iname "help" | head -n 1)
+
+              if [ -d "\$help_dir" ]; then
+                echo "  Found help directory: \$help_dir"
+
+                # Create project directory
+                mkdir -p "docs/\$dirname"
+                echo "# \$dirname Documentation" > "docs/\$dirname/README.md"
+
+                # Add to sidebar if not already there
+                if ! grep -q "\$dirname" docs/_sidebar.md; then
+                  echo "- **\$dirname**" >> docs/_sidebar.md
+                  echo "  - [Overview](/\$dirname/)" >> docs/_sidebar.md
+                fi
+
+                # Process markdown files
+                find "$help_dir" -name "*.md" -type f | while read file; do
+                  filename=$(basename "$file")
+                  basename="${filename%.*}"
+
+                  echo "    Processing file: \$filename"
+
+                  # Process markdown content
+                  awk '
+                  BEGIN { in_code_block = 0 }
+                  /^```/ { in_code_block = !in_code_block; print; next }
+                  in_code_block { print; next }
+                  /\[.*\]\((?!http|https|ftp|mailto)/ {
+                    gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$dirname'/\\2)")
+                  }
+                  { print }
+                  ' "$file" > "docs/$dirname/$filename"
+
+                  # Add to sidebar if not already there
+                  if [ "$basename" != "README" ]; then
+                    if ! grep -q "$basename" docs/_sidebar.md; then
+                      sed -i "/$dirname\/\)/a \ \ - [$basename](/$dirname/$filename)" docs/_sidebar.md
+                    fi
+                  fi
+                done
+              fi
+            fi
+          done
+
           echo "::endgroup::"
+
+          # Add special sections to sidebar if not already there
+          if ! grep -q "Resources" docs/_sidebar.md; then
+            echo "- **Resources**" >> docs/_sidebar.md
+            echo "  - [FAQ](/resources/faq)" >> docs/_sidebar.md
+          fi
+
+          # Create resources section if not already there
+          if [ ! -d "docs/resources" ]; then
+            mkdir -p docs/resources
+            cat > docs/resources/faq.md << 'EOF'
+            # Frequently Asked Questions
+
+            This page contains frequently asked questions about the admin tools.
+
+            ## General Questions
+
+            ### How do I report an issue?
+
+            You can report issues through the GitHub repository issue tracker.
+
+            ### How do I contribute to documentation?
+
+            To contribute to the documentation, add or edit markdown files in the `help` directory of the relevant project.
+            EOF
+          fi
+
+          echo "::set-output name=migration_status::$MIGRATION_SUCCESS"
+
+
+
 
       - name: Generate Search Index
         if: steps.migrate_markdown.outputs.migration_status != 'false'
         run: |
           echo "::group::Generating search index"
+          # Create a simple script to generate search index
           cat > generate-search-index.js << 'EOF'
           const fs = require('fs');
           const path = require('path');
 
+          // Recursively get all markdown files
           function getMarkdownFiles(dir, fileList = []) {
             const files = fs.readdirSync(dir);
             
@@ -316,6 +632,7 @@ jobs:
             return fileList;
           }
 
+          // Create search index
           const docsPath = 'docs';
           const searchIndex = {};
           
@@ -324,14 +641,16 @@ jobs:
             const relativePath = file.replace(docsPath + '/', '');
             const content = fs.readFileSync(file, 'utf8');
             
+            // Extract title and content
             const titleMatch = content.match(/^# (.*)/m);
             const title = titleMatch ? titleMatch[1] : path.basename(file, '.md');
             
+            // Clean up content for search indexing
             const cleanContent = content
-              .replace(/```[\s\S]*?```/g, '')
-              .replace(/#+\s(.*)/g, '$1')
-              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-              .substring(0, 5000);
+              .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+              .replace(/#+\s(.*)/g, '$1')     // Extract headings
+              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Extract link text
+              .substring(0, 5000);            // Limit size
             
             searchIndex[relativePath] = {
               title,
@@ -346,23 +665,26 @@ jobs:
           node generate-search-index.js
           echo "::endgroup::"
 
-      - name: Generate Preview Script
+      - name: Generate Script for Previewing Documentation Locally
         run: |
           echo "::group::Creating preview script"
+          # Create a convenience script for local preview
           cat > preview-docs.sh << 'EOF'
           #!/bin/bash
           
+          # Prerequisites check
           if ! command -v npm &> /dev/null; then
             echo "npm is not installed. Please install Node.js and npm first."
             exit 1
           fi
           
+          # Install docsify-cli if not already installed
           if ! command -v docsify &> /dev/null; then
             echo "Installing docsify-cli..."
             npm install -g docsify-cli
           fi
           
-          echo "Starting docsify on http://localhost:3000"
+          echo "Starting documentation preview server on http://localhost:3000"
           cd docs && docsify serve
           EOF
           
@@ -372,56 +694,133 @@ jobs:
       - name: Test Documentation Structure
         run: |
           echo "::group::Verifying documentation structure"
-          if [ ! -f "docs/index.html" ] || [ ! -f "docs/_sidebar.md" ] || [ ! -f "docs/README.md" ]; then
-            echo "ERROR: Essential files missing"
+          # Check if essential files exist
+          if [ ! -f "docs/index.html" ]; then
+            echo "ERROR: docs/index.html not found"
             exit 1
           fi
           
+          if [ ! -f "docs/_sidebar.md" ]; then
+            echo "ERROR: docs/_sidebar.md not found"
+            exit 1
+          fi
+          
+          if [ ! -f "docs/README.md" ]; then
+            echo "ERROR: docs/README.md not found"
+            exit 1
+          fi
+          
+          # Check if any content was created
           MODULE_COUNT=$(ls -1 docs/ | grep -v "^\." | grep -v "index.html" | grep -v "_sidebar.md" | grep -v "README.md" | grep -v "assets" | wc -l)
           
           if [ "$MODULE_COUNT" -eq 0 ]; then
-            echo "WARNING: No module directories created"
+            echo "WARNING: No module directories were created. Check your repository structure."
           else
-            echo "Success! Created $MODULE_COUNT module directories."
+            echo "Success! Created documentation structure with $MODULE_COUNT module directories."
           fi
           echo "::endgroup::"
 
       - name: Commit Changes
         run: |
-          echo "::group::Committing changes"
+          echo "::group::Committing changes to repository"
           git config --global user.name "Docsify Auto Setup"
           git config --global user.email "docsify-bot@noreply.github.com"
           
+          # Add all documentation files
           git add docs/ preview-docs.sh
           
+          # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Automated Docsify documentation setup"
+            # Create commit with detailed message
+            git commit -m "Automated Docsify documentation setup
+
+          This commit:
+          - Creates/updates the Docsify documentation structure
+          - Migrates markdown files from help directories
+          - Updates the sidebar navigation
+          - Sets up a local preview script (preview-docs.sh)"
+            
+            # Push changes
             git push
-            echo "Changes committed and pushed"
+            echo "Successfully committed and pushed documentation changes"
           fi
           echo "::endgroup::"
 
       - name: GitHub Pages Setup Instructions
         if: success()
         run: |
-          echo "::group::GitHub Pages Setup"
-          echo "To deploy to GitHub Pages:"
-          echo "1. Go to Settings > Pages"
-          echo "2. Set source to 'Deploy from branch'"
-          echo "3. Select branch 'main' and folder '/docs'"
-          echo "4. Click Save"
+          echo "::group::GitHub Pages Setup Instructions"
+          echo "To set up GitHub Pages for your documentation, please follow these steps:"
+          echo ""
+          echo "1. Go to your repository on GitHub"
+          echo "2. Click on 'Settings'"
+          echo "3. Select 'Pages' from the left sidebar"
+          echo "4. Under 'Build and deployment', select:"
+          echo "   - Source: 'Deploy from a branch'"
+          echo "   - Branch: 'main'"
+          echo "   - Folder: '/docs'"
+          echo "5. Click 'Save'"
+          echo ""
+          echo "OR"
+          echo ""
+          echo "Create a new file at .github/workflows/deploy-docs.yml with the following content:"
+          echo ""
+          cat << 'EOF'
+          name: Deploy Documentation to GitHub Pages
+          on:
+            push:
+              branches: [main]
+              paths: ['docs/**']
+            workflow_dispatch:
+
+          permissions:
+            contents: read
+            pages: write
+            id-token: write
+
+          concurrency:
+            group: "pages"
+            cancel-in-progress: false
+
+          jobs:
+            deploy:
+              environment:
+                name: github-pages
+                url: ${{ steps.deployment.outputs.page_url }}
+              runs-on: ubuntu-latest
+              steps:
+                - name: Checkout
+                  uses: actions/checkout@v4
+                
+                - name: Setup Pages
+                  uses: actions/configure-pages@v4
+                
+                - name: Upload artifact
+                  uses: actions/upload-pages-artifact@v1
+                  with:
+                    path: 'docs'
+                
+                - name: Deploy to GitHub Pages
+                  id: deployment
+                  uses: actions/deploy-pages@v1
+          EOF
           echo "::endgroup::"
 
       - name: Output Documentation Summary
         run: |
           echo "::group::Documentation Summary"
+          
+          # Count total documents
           TOTAL_DOCS=$(find docs -name "*.md" | wc -l)
+          
           echo "Documentation setup complete!"
-          echo "Total files: $TOTAL_DOCS"
+          echo "----------------------------"
+          echo "Total documentation files: $TOTAL_DOCS"
           echo "Modules:"
           
+          # Get counts for each module
           for module in ${{ env.MODULES }}; do
             if [ -d "docs/$module" ]; then
               MODULE_DOCS=$(find "docs/$module" -name "*.md" | wc -l)
@@ -429,5 +828,6 @@ jobs:
             fi
           done
           
-          echo "Run: ./preview-docs.sh to preview locally"
+          echo ""
+          echo "To preview the documentation locally, run: ./preview-docs.sh"
           echo "::endgroup::"
