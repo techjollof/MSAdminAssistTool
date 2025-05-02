@@ -1,0 +1,37 @@
+/* Custom styles for the documentation */
+:root {
+  --theme-color: #42b983;
+  --heading-color: #34495e;
+  --text-color: #34495e;
+  --sidebar-background: #f8f8f8;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+  background-color: var(--sidebar-background);
+  padding: 1rem;
+}
+
+.content {
+  padding: 2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+}
+
+.markdown-section a {
+  color: var(--theme-color);
+}
+
+.docs-footer {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  font-size: 0.85rem;
+  color: #888;
+}
