@@ -330,6 +330,97 @@ jobs:
     #     find . -type f -name "*.md" | sort
     
 
+    # - name: Generate Structured Wiki Pages
+    #   run: |
+    #     cd wiki
+    #     echo "Generating hierarchical wiki pages..."
+        
+    #     # Create Home page with module links
+    #     echo "# Admin Tools Wiki" > Home.md
+    #     echo "" >> Home.md
+    #     echo "## Modules" >> Home.md
+        
+    #     MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
+        
+    #     # Process each module
+    #     for module in $MODULES; do
+    #       if [ -d "$module" ]; then
+    #         echo "Building structure for module: $module"
+            
+    #         # Add module to Home page
+    #         echo "- [$module]($module/Index)" >> Home.md
+            
+    #         # Create module index page
+    #         mkdir -p "$module"
+    #         echo "# $module Projects" > "$module/Index.md"
+    #         echo "" >> "$module/Index.md"
+            
+    #         # Process each project in module
+    #         for projectDir in "$module"/*/; do
+    #           if [ -d "$projectDir" ]; then
+    #             projectname=$(basename "$projectDir")
+    #             echo "  Adding project: $projectname"
+                
+    #             # Add project to module index
+    #             echo "## [$projectname]($module/$projectname/Index)" >> "$module/Index.md"
+    #             echo "" >> "$module/Index.md"
+                
+    #             # Create project index page
+    #             mkdir -p "$module/$projectname"
+    #             echo "# $projectname Documentation" > "$module/$projectname/Index.md"
+    #             echo "" >> "$module/$projectname/Index.md"
+                
+    #             # Add help files to project index
+    #             find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+    #               filename=$(basename "$mdfile")
+    #               title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+    #               echo "- [$title]($module/$projectname/$filename)" >> "$module/$projectname/Index.md"
+    #               cp "$mdfile" "$module/$projectname/$filename"
+    #             done
+    #           fi
+    #         done
+    #       fi
+    #     done
+        
+    #     # Process Root Projects
+    #     if [ -d "RootProjects" ]; then
+    #       echo "" >> Home.md
+    #       echo "## Independent Projects" >> Home.md
+    #       echo "- [Independent Projects](RootProjects/Index)" >> Home.md
+          
+    #       mkdir -p "RootProjects"
+    #       echo "# Independent Projects" > "RootProjects/Index.md"
+    #       echo "" >> "RootProjects/Index.md"
+          
+    #       for projectDir in "RootProjects"/*/; do
+    #         if [ -d "$projectDir" ]; then
+    #           projectname=$(basename "$projectDir")
+    #           echo "Adding root project: $projectname"
+              
+    #           # Add to root projects index
+    #           echo "## [$projectname](RootProjects/$projectname/Index)" >> "RootProjects/Index.md"
+    #           echo "" >> "RootProjects/Index.md"
+              
+    #           # Create project index
+    #           mkdir -p "RootProjects/$projectname"
+    #           echo "# $projectname Documentation" > "RootProjects/$projectname/Index.md"
+    #           echo "" >> "RootProjects/$projectname/Index.md"
+              
+    #           # Add help files
+    #           find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+    #             filename=$(basename "$mdfile")
+    #             title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+    #             echo "- [$title](RootProjects/$projectname/$filename)" >> "RootProjects/$projectname/Index.md"
+    #             cp "$mdfile" "RootProjects/$projectname/$filename"
+    #           done
+    #         fi
+    #       done
+    #     fi
+        
+    #     echo "Generated wiki structure:"
+    #     find . -type f -name "*.md" | sort
+    
+
     - name: Generate Structured Wiki Pages
       run: |
         cd wiki
@@ -344,7 +435,7 @@ jobs:
         
         # Process each module
         for module in $MODULES; do
-          if [ -d "$module" ]; then
+          if [ -d "../$module" ]; then  # Look in parent directory for source files
             echo "Building structure for module: $module"
             
             # Add module to Home page
@@ -356,7 +447,7 @@ jobs:
             echo "" >> "$module/Index.md"
             
             # Process each project in module
-            for projectDir in "$module"/*/; do
+            for projectDir in "../$module"/*/; do  # Look in parent directory
               if [ -d "$projectDir" ]; then
                 projectname=$(basename "$projectDir")
                 echo "  Adding project: $projectname"
@@ -370,56 +461,61 @@ jobs:
                 echo "# $projectname Documentation" > "$module/$projectname/Index.md"
                 echo "" >> "$module/$projectname/Index.md"
                 
-                # Add help files to project index
-                find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
-                  filename=$(basename "$mdfile")
-                  title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                  echo "- [$title]($module/$projectname/$filename)" >> "$module/$projectname/Index.md"
-                  cp "$mdfile" "$module/$projectname/$filename"
-                done
+                # Find and process help files
+                helpDir=$(find "$projectDir" -maxdepth 1 -type d -iname "help" | head -n 1)
+                if [ -n "$helpDir" ]; then
+                  find "$helpDir" -name "*.md" -type f | sort | while read mdfile; do
+                    filename=$(basename "$mdfile")
+                    title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
+                    echo "- [$title]($module/$projectname/$filename)" >> "$module/$projectname/Index.md"
+                    cp "$mdfile" "$module/$projectname/$filename"  # Copy from source help dir to wiki
+                  done
+                fi
               fi
             done
           fi
         done
         
         # Process Root Projects
-        if [ -d "RootProjects" ]; then
-          echo "" >> Home.md
-          echo "## Independent Projects" >> Home.md
-          echo "- [Independent Projects](RootProjects/Index)" >> Home.md
-          
-          mkdir -p "RootProjects"
-          echo "# Independent Projects" > "RootProjects/Index.md"
-          echo "" >> "RootProjects/Index.md"
-          
-          for projectDir in "RootProjects"/*/; do
-            if [ -d "$projectDir" ]; then
-              projectname=$(basename "$projectDir")
-              echo "Adding root project: $projectname"
+        echo "" >> Home.md
+        echo "## Independent Projects" >> Home.md
+        echo "- [Independent Projects](RootProjects/Index)" >> Home.md
+        
+        mkdir -p "RootProjects"
+        echo "# Independent Projects" > "RootProjects/Index.md"
+        echo "" >> "RootProjects/Index.md"
+        
+        find .. -maxdepth 1 -type d -not -path "." -not -path "../wiki" -not -path "../.git" -not -path "../.github" | while read rootdir; do
+          rootdir="${rootdir#../}"
+          if ! echo "$MODULES" | grep -q -w "$rootdir"; then
+            helpDir=$(find "../$rootdir" -maxdepth 1 -type d -iname "help" | head -n 1)
+            if [ -n "$helpDir" ]; then
+              echo "Adding root project: $rootdir"
               
               # Add to root projects index
-              echo "## [$projectname](RootProjects/$projectname/Index)" >> "RootProjects/Index.md"
+              echo "## [$rootdir](RootProjects/$rootdir/Index)" >> "RootProjects/Index.md"
               echo "" >> "RootProjects/Index.md"
               
               # Create project index
-              mkdir -p "RootProjects/$projectname"
-              echo "# $projectname Documentation" > "RootProjects/$projectname/Index.md"
-              echo "" >> "RootProjects/$projectname/Index.md"
+              mkdir -p "RootProjects/$rootdir"
+              echo "# $rootdir Documentation" > "RootProjects/$rootdir/Index.md"
+              echo "" >> "RootProjects/$rootdir/Index.md"
               
               # Add help files
-              find "$projectDir" -name "*.md" -type f | sort | while read mdfile; do
+              find "$helpDir" -name "*.md" -type f | sort | while read mdfile; do
                 filename=$(basename "$mdfile")
                 title=$(head -n 1 "$mdfile" | grep '^#' | sed 's/^#\s*//' || echo "$filename")
-                echo "- [$title](RootProjects/$projectname/$filename)" >> "RootProjects/$projectname/Index.md"
-                cp "$mdfile" "RootProjects/$projectname/$filename"
+                echo "- [$title](RootProjects/$rootdir/$filename)" >> "RootProjects/$rootdir/Index.md"
+                cp "$mdfile" "RootProjects/$rootdir/$filename"
               done
             fi
-          done
-        fi
+          fi
+        done
         
         echo "Generated wiki structure:"
         find . -type f -name "*.md" | sort
-        
+
+
     - name: Commit and Push to Wiki
       run: |
         cd wiki
