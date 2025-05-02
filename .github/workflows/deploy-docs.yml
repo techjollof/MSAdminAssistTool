@@ -1,5 +1,4 @@
 name: Deploy Documentation to GitHub Pages
-
 on:
   push:
     branches: [main]
@@ -24,15 +23,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
+      
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2 # Updated to v2
+        uses: actions/upload-pages-artifact@v1
         with:
           path: 'docs'
-
+      
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2 # Updated to v2
+        uses: actions/deploy-pages@v1
