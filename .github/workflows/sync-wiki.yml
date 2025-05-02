@@ -43,6 +43,7 @@ jobs:
         git clone https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.wiki.git wiki || echo "No wiki exists yet, creating new wiki"
         mkdir -p wiki
         
+  
     # - name: Sync Help Markdown Files to Wiki
     #   run: |
     #     echo "Starting sync process..."
@@ -53,78 +54,81 @@ jobs:
     #     find wiki -mindepth 1 -path "wiki/.git" -prune -o -exec rm -rf {} \; 2>/dev/null || true
     #     mkdir -p wiki
         
-    #     # Define known module names - add all your actual modules here
+    #     # Define known module names
     #     MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
-    #     # Process all markdown files in Help directories with specific handling for modules vs root projects
     #     echo "Processing markdown files..."
         
-    #     # First handle projects under modules (standard hierarchy)
+    #     # First handle projects under modules
     #     for module in $MODULES; do
     #       if [ -d "$module" ]; then
     #         echo "Processing module: $module"
+    #         module_has_content=false
             
     #         for project in "$module"/*/; do
     #           if [ -d "$project" ]; then
     #             projectname=$(basename "$project")
-    #             echo "  Processing project under module: $projectname in $module"
                 
-    #             # Create project directory in wiki
-    #             mkdir -p "wiki/$module/$projectname"
+    #             # Find Help directory (case insensitive)
+    #             helpDir=$(find "$project" -maxdepth 1 -type d -iname "help" | head -n 1)
                 
-    #             # Find and copy help markdown files for this project
-    #             if [ -d "$project/Help" ]; then
-    #               echo "    Found Help directory"
-    #               find "$project/Help" -name "*.md" -type f | while read src_file; do
+    #             if [ -n "$helpDir" ] && [ -n "$(find "$helpDir" -name "*.md" -type f -print -quit)" ]; then
+    #               if [ "$module_has_content" = false ]; then
+    #                 # Only create module directory when we find first content
+    #                 mkdir -p "wiki/$module"
+    #                 module_has_content=true
+    #               fi
+                  
+    #               echo "  Processing project: $projectname (has Help content)"
+    #               mkdir -p "wiki/$module/$projectname"
+                  
+    #               find "$helpDir" -name "*.md" -type f | while read src_file; do
     #                 filename=$(basename "$src_file")
     #                 echo "    Copying $src_file to wiki/$module/$projectname/$filename"
-    #                 cp "$src_file" "wiki/$module/$projectname/$filename" || echo "Failed to copy $src_file"
+    #                 cp "$src_file" "wiki/$module/$projectname/$filename"
     #               done
     #             else
-    #               echo "    No Help directory found in $project"
+    #               echo "  Skipping project: $projectname (no Help content)"
     #             fi
     #           fi
     #         done
+            
+    #         [ "$module_has_content" = false ] && echo "  No Help content found in module: $module"
     #       else
-    #         echo "Module directory not found: $module"
+    #         echo "Module directory not found in source: $module (skipping)"
     #       fi
     #     done
         
-    #     # Then handle root-level projects (treating them as their own category)
+    #     # Then handle root-level projects
     #     echo "Processing root-level projects..."
-    #     mkdir -p "wiki/RootProjects"
         
-    #     # Find all directories at root level that aren't modules or special directories
     #     find . -maxdepth 1 -type d -not -path "." -not -path "./wiki" -not -path "./.git" -not -path "./.github" | while read rootdir; do
     #       dirname=$(basename "$rootdir")
           
-    #       # Skip if this is a known module
+    #       # Skip known modules
     #       if echo "$MODULES" | grep -q -w "$dirname"; then
     #         echo "  Skipping module directory: $dirname"
     #         continue
     #       fi
           
-    #       echo "  Processing root project: $dirname"
+    #       # Find Help directory (case insensitive)
+    #       helpDir=$(find "$rootdir" -maxdepth 1 -type d -iname "help" | head -n 1)
           
-    #       # Create project directory in wiki under RootProjects
-    #       mkdir -p "wiki/RootProjects/$dirname"
-          
-    #       # Find and copy help markdown files for this project
-    #       if [ -d "$rootdir/Help" ]; then
-    #         echo "    Found Help directory"
-    #         find "$rootdir/Help" -name "*.md" -type f | while read src_file; do
+    #       if [ -n "$helpDir" ] && [ -n "$(find "$helpDir" -name "*.md" -type f -print -quit)" ]; then
+    #         echo "  Processing root project: $dirname (has Help content)"
+    #         mkdir -p "wiki/RootProjects/$dirname"
+            
+    #         find "$helpDir" -name "*.md" -type f | while read src_file; do
     #           filename=$(basename "$src_file")
     #           echo "    Copying $src_file to wiki/RootProjects/$dirname/$filename"
-    #           cp "$src_file" "wiki/RootProjects/$dirname/$filename" || echo "Failed to copy $src_file"
+    #           cp "$src_file" "wiki/RootProjects/$dirname/$filename"
     #         done
     #       else
-    #         echo "    No Help directory found in $rootdir"
+    #         echo "  Skipping root project: $dirname (no Help content)"
     #       fi
     #     done
-      
-    
-    
-    - name: Sync Help Markdown Files to Wiki
+
+    - name: Sync Help Markdown Files and Images to Wiki
       run: |
         echo "Starting sync process..."
         echo "Repository structure:"
@@ -137,7 +141,7 @@ jobs:
         # Define known module names
         MODULES="EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
         
-        echo "Processing markdown files..."
+        echo "Processing markdown files and images..."
         
         # First handle projects under modules
         for module in $MODULES; do
@@ -152,23 +156,38 @@ jobs:
                 # Find Help directory (case insensitive)
                 helpDir=$(find "$project" -maxdepth 1 -type d -iname "help" | head -n 1)
                 
-                if [ -n "$helpDir" ] && [ -n "$(find "$helpDir" -name "*.md" -type f -print -quit)" ]; then
-                  if [ "$module_has_content" = false ]; then
-                    # Only create module directory when we find first content
-                    mkdir -p "wiki/$module"
-                    module_has_content=true
+                if [ -n "$helpDir" ]; then
+                  # Check for either markdown files or images
+                  if [ -n "$(find "$helpDir" \( -name "*.md" -o -name "*.png" -o -name "*.jpg" -o -name "*.gif" \) -print -quit)" ]; then
+                    if [ "$module_has_content" = false ]; then
+                      mkdir -p "wiki/$module"
+                      module_has_content=true
+                    fi
+                    
+                    echo "  Processing project: $projectname (has Help content)"
+                    mkdir -p "wiki/$module/$projectname"
+                    
+                    # Copy all markdown files
+                    find "$helpDir" -name "*.md" -type f | while read src_file; do
+                      filename=$(basename "$src_file")
+                      echo "    Copying $src_file to wiki/$module/$projectname/$filename"
+                      cp "$src_file" "wiki/$module/$projectname/$filename"
+                    done
+                    
+                    # Copy all image files (including subdirectories)
+                    if [ -d "$helpDir/images" ] || [ -d "$helpDir/Images" ]; then
+                      imagesDir=$(find "$helpDir" -maxdepth 1 -type d \( -iname "images" -o -iname "pictures" \) | head -n 1)
+                      if [ -n "$imagesDir" ]; then
+                        echo "    Copying images from $imagesDir"
+                        mkdir -p "wiki/$module/$projectname/images"
+                        cp -r "$imagesDir"/* "wiki/$module/$projectname/images/"
+                      fi
+                    fi
+                  else
+                    echo "  Skipping project: $projectname (no Help content)"
                   fi
-                  
-                  echo "  Processing project: $projectname (has Help content)"
-                  mkdir -p "wiki/$module/$projectname"
-                  
-                  find "$helpDir" -name "*.md" -type f | while read src_file; do
-                    filename=$(basename "$src_file")
-                    echo "    Copying $src_file to wiki/$module/$projectname/$filename"
-                    cp "$src_file" "wiki/$module/$projectname/$filename"
-                  done
                 else
-                  echo "  Skipping project: $projectname (no Help content)"
+                  echo "  Skipping project: $projectname (no Help directory)"
                 fi
               fi
             done
@@ -194,21 +213,38 @@ jobs:
           # Find Help directory (case insensitive)
           helpDir=$(find "$rootdir" -maxdepth 1 -type d -iname "help" | head -n 1)
           
-          if [ -n "$helpDir" ] && [ -n "$(find "$helpDir" -name "*.md" -type f -print -quit)" ]; then
-            echo "  Processing root project: $dirname (has Help content)"
-            mkdir -p "wiki/RootProjects/$dirname"
-            
-            find "$helpDir" -name "*.md" -type f | while read src_file; do
-              filename=$(basename "$src_file")
-              echo "    Copying $src_file to wiki/RootProjects/$dirname/$filename"
-              cp "$src_file" "wiki/RootProjects/$dirname/$filename"
-            done
+          if [ -n "$helpDir" ]; then
+            # Check for either markdown files or images
+            if [ -n "$(find "$helpDir" \( -name "*.md" -o -name "*.png" -o -name "*.jpg" -o -name "*.gif" \) -print -quit)" ]; then
+              echo "  Processing root project: $dirname (has Help content)"
+              mkdir -p "wiki/RootProjects/$dirname"
+              
+              # Copy all markdown files
+              find "$helpDir" -name "*.md" -type f | while read src_file; do
+                filename=$(basename "$src_file")
+                echo "    Copying $src_file to wiki/RootProjects/$dirname/$filename"
+                cp "$src_file" "wiki/RootProjects/$dirname/$filename"
+              done
+              
+              # Copy all image files (including subdirectories)
+              if [ -d "$helpDir/images" ] || [ -d "$helpDir/Images" ]; then
+                imagesDir=$(find "$helpDir" -maxdepth 1 -type d \( -iname "images" -o -iname "pictures" \) | head -n 1)
+                if [ -n "$imagesDir" ]; then
+                  echo "    Copying images from $imagesDir"
+                  mkdir -p "wiki/RootProjects/$dirname/images"
+                  cp -r "$imagesDir"/* "wiki/RootProjects/$dirname/images/"
+                fi
+              fi
+            else
+              echo "  Skipping root project: $dirname (no Help content)"
+            fi
           else
-            echo "  Skipping root project: $dirname (no Help content)"
+            echo "  Skipping root project: $dirname (no Help directory)"
           fi
         done
-
-    
+        
+        echo "Sync process completed successfully"
+        
     - name: Generate Main Wiki Pages
       run: |
         cd wiki
