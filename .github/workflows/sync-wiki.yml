@@ -172,6 +172,7 @@ jobs:
 
 
         # Process all markdown files in help directories with specific handling for modules vs root projects
+        # Process all markdown files in help directories with specific handling for modules vs root projects
         echo "Processing markdown files..."
 
         # First handle projects under modules (standard hierarchy)
@@ -191,13 +192,20 @@ jobs:
                         # Create project directory in wiki
                         mkdir -p "wiki/$module/$projectname"
 
-                        # Log the path being checked for the help directory
-                        echo "    Checking for help directory at: $project/help"
-
-                        # Find and copy help markdown files for this project
+                        # Check for both "help" and "Help" directories
+                        help_dir=""
                         if [ -d "$project/help" ]; then
-                            echo "    Found help directory"
-                            find "$project/help" -name "*.md" -type f | while read src_file; do
+                            help_dir="$project/help"
+                        elif [ -d "$project/Help" ]; then
+                            help_dir="$project/Help"
+                        fi
+
+                        # Log the path being checked for the help directory
+                        if [ -n "$help_dir" ]; then
+                            echo "    Found help directory at: $help_dir"
+
+                            # Copy markdown files from the help directory
+                            find "$help_dir" -name "*.md" -type f | while read src_file; do
                                 filename=$(basename "$src_file")
                                 echo "    Copying $src_file to wiki/$module/$projectname/$filename"
                                 cp "$src_file" "wiki/$module/$projectname/$filename" || echo "Failed to copy $src_file"
