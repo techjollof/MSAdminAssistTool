@@ -373,7 +373,7 @@ jobs:
                           result = result "[" link_text "](" url ")"
                         } else {
                           # Relative link, add module/project prefix
-                          result = result "[" link_text](/" module "/" project "/" url ")"
+                          result = result "[" link_text "](/" module "/" project "/" url ")"
                         }
                       }
                       
@@ -511,7 +511,7 @@ jobs:
                         result = result "[" link_text "](" url ")"
                       } else {
                         # Relative link, add dirname prefix
-                        result = result "[" link_text](/" dirname "/" url ")"
+                        result = result "[" link_text "](/" module "/" project "/" url ")"
                       }
                     }
                     
