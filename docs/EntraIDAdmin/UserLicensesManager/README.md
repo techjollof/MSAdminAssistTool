@@ -271,4 +271,3 @@ Connect-MgGraph -Scopes "User.ReadWrite.All", "Directory.ReadWrite.All"
 - [\1](/EntraIDAdmin/UserLicensesManager/\2)
 - [\1](/EntraIDAdmin/UserLicensesManager/\2)
 - [\1](/EntraIDAdmin/UserLicensesManager/\2)
-No documentation available yet. Please add markdown files to the help directory.

@@ -1,7 +1,7 @@
 {
   "EXOAdmin/MailboxFolderPolicyTag/README.md": {
     "title": "MailboxFolderPolicyTag",
-    "content": "MailboxFolderPolicyTag\n\nDocumentation for the MailboxFolderPolicyTag tool in the EXOAdmin module.\nNo documentation available yet. Please add markdown files to the help directory.\n"
+    "content": "MailboxFolderPolicyTag\n\nDocumentation for the MailboxFolderPolicyTag tool in the EXOAdmin module.\n"
   },
   "EXOAdmin/MailboxFolderPolicyTag/Set-MailboxFolderPolicyTag.md": {
     "title": "Set-MailboxFolderPolicyTag",
@@ -13,7 +13,7 @@
   },
   "EXOAdmin/MoveEmails/README.md": {
     "title": "MoveEmails",
-    "content": "MoveEmails\n\nDocumentation for the MoveEmails tool in the EXOAdmin module.\nNo documentation available yet. Please add markdown files to the help directory.\n"
+    "content": "MoveEmails\n\nDocumentation for the MoveEmails tool in the EXOAdmin module.\n"
   },
   "EXOAdmin/README.md": {
     "title": "EXOAdmin Documentation",
@@ -25,7 +25,7 @@
   },
   "EntraIDAdmin/LicenseInfoLastLogin/README.md": {
     "title": "LicenseInfoLastLogin",
-    "content": "LicenseInfoLastLogin\n\nDocumentation for the LicenseInfoLastLogin tool in the EntraIDAdmin module.\nNo documentation available yet. Please add markdown files to the help directory.\n"
+    "content": "LicenseInfoLastLogin\n\nDocumentation for the LicenseInfoLastLogin tool in the EntraIDAdmin module.\n"
   },
   "EntraIDAdmin/PasswordExpiryNotifier/AdvancedPasswordExpirationNotifier.md": {
     "title": "Advanced Technical Documentation",
@@ -45,7 +45,7 @@
   },
   "EntraIDAdmin/PasswordExpiryNotifier/README.md": {
     "title": "PasswordExpiryNotifier",
-    "content": "PasswordExpiryNotifier\n\nDocumentation for the PasswordExpiryNotifier tool in the EntraIDAdmin module.\nNo documentation available yet. Please add markdown files to the help directory.\n"
+    "content": "PasswordExpiryNotifier\n\nDocumentation for the PasswordExpiryNotifier tool in the EntraIDAdmin module.\n"
   },
   "EntraIDAdmin/PasswordExpiryNotifier/Register-AppOnly.md": {
     "title": "Register AppOnly",
@@ -73,19 +73,19 @@
   },
   "SCCAdmin/README.md": {
     "title": "SCCAdmin Documentation",
-    "content": "SCCAdmin Documentation\n\nThis module does not have any documented tools yet.\n"
+    "content": "SCCAdmin Documentation\n\nAvailable Tools\nThis module does not have any documented tools yet.\n"
   },
   "SPOAdmin/README.md": {
     "title": "SPOAdmin Documentation",
-    "content": "SPOAdmin Documentation\n\nThis module does not have any documented tools yet.\n"
+    "content": "SPOAdmin Documentation\n\nAvailable Tools\nThis module does not have any documented tools yet.\n"
   },
   "TeamsAdmin/README.md": {
     "title": "TeamsAdmin Documentation",
-    "content": "TeamsAdmin Documentation\n\nThis module does not have any documented tools yet.\n"
+    "content": "TeamsAdmin Documentation\n\nAvailable Tools\nThis module does not have any documented tools yet.\n"
   },
   "_sidebar.md": {
     "title": "_sidebar",
-    "content": "* Home\n* **EntraIDAdmin**\n  * Overview\n* **EXOAdmin**\n  * Overview\n* **SCCAdmin**\n  * Overview\n* **SPOAdmin**\n  * Overview\n* **TeamsAdmin**\n  * Overview\n  * LicenseInfoLastLogin\n    * Get-LicenseAndLastSignInReport\n  * PasswordExpiryNotifier\n    * Register-AppOnly\n    * PasswordExpirationNotifier\n    * AdvancedPasswordExpirationNotifier\n    * Config\n    * New-SelfSignedCertificate\n  * UserLicensesManager\n    * Perform-MgUserLicenseUpgrade\n    * Provision-MgUserAccount\n  * MailboxFolderPolicyTag\n    * Set-MailboxFolderPolicyTag\n  * MoveEmails\n    * Move-MailAcrossFolders\n* **Resources**\n  * FAQ\n"
+    "content": "* Home\n* **EntraIDAdmin**\n  * Overview\n  * LicenseInfoLastLogin\n    * Get-LicenseAndLastSignInReport\n  * PasswordExpiryNotifier\n    * Register-AppOnly\n    * PasswordExpirationNotifier\n    * AdvancedPasswordExpirationNotifier\n    * Config\n    * New-SelfSignedCertificate\n  * UserLicensesManager\n    * Perform-MgUserLicenseUpgrade\n    * Provision-MgUserAccount\n* **EXOAdmin**\n  * Overview\n  * MailboxFolderPolicyTag\n    * Set-MailboxFolderPolicyTag\n  * MoveEmails\n    * Move-MailAcrossFolders\n* **SCCAdmin**\n  * Overview\n* **SPOAdmin**\n  * Overview\n* **TeamsAdmin**\n  * Overview\n* **Resources**\n  * FAQ\n"
   },
   "resources/faq.md": {
     "title": "Frequently Asked Questions",

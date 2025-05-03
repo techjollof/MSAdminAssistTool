@@ -1,14 +1,6 @@
 * [Home](/)
 * **EntraIDAdmin**
   * [Overview](/EntraIDAdmin/)
-* **EXOAdmin**
-  * [Overview](/EXOAdmin/)
-* **SCCAdmin**
-  * [Overview](/SCCAdmin/)
-* **SPOAdmin**
-  * [Overview](/SPOAdmin/)
-* **TeamsAdmin**
-  * [Overview](/TeamsAdmin/)
   * [LicenseInfoLastLogin](/EntraIDAdmin/LicenseInfoLastLogin/)
     * [Get-LicenseAndLastSignInReport](/EntraIDAdmin/LicenseInfoLastLogin/Get-LicenseAndLastSignInReport.md)
   * [PasswordExpiryNotifier](/EntraIDAdmin/PasswordExpiryNotifier/)
@@ -20,9 +12,17 @@
   * [UserLicensesManager](/EntraIDAdmin/UserLicensesManager/)
     * [Perform-MgUserLicenseUpgrade](/EntraIDAdmin/UserLicensesManager/Perform-MgUserLicenseUpgrade.md)
     * [Provision-MgUserAccount](/EntraIDAdmin/UserLicensesManager/Provision-MgUserAccount.md)
+* **EXOAdmin**
+  * [Overview](/EXOAdmin/)
   * [MailboxFolderPolicyTag](/EXOAdmin/MailboxFolderPolicyTag/)
     * [Set-MailboxFolderPolicyTag](/EXOAdmin/MailboxFolderPolicyTag/Set-MailboxFolderPolicyTag.md)
   * [MoveEmails](/EXOAdmin/MoveEmails/)
     * [Move-MailAcrossFolders](/EXOAdmin/MoveEmails/Move-MailAcrossFolders.md)
+* **SCCAdmin**
+  * [Overview](/SCCAdmin/)
+* **SPOAdmin**
+  * [Overview](/SPOAdmin/)
+* **TeamsAdmin**
+  * [Overview](/TeamsAdmin/)
 * **Resources**
   * [FAQ](/resources/faq)
