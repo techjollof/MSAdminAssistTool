@@ -578,6 +578,34 @@ jobs:
           fi
           echo "::endgroup::"
 
+      # - name: Commit Changes
+      #   run: |
+      #     echo "::group::Committing changes to repository"
+      #     git config --global user.name "Docsify Auto Setup"
+      #     git config --global user.email "docsify-bot@noreply.github.com"
+          
+      #     # Add all documentation files
+      #     git add docs/ preview-docs.sh
+          
+      #     # Check if there are changes to commit
+      #     if git diff --staged --quiet; then
+      #       echo "No changes to commit"
+      #     else
+      #       # Create commit with detailed message
+      #       git commit -m "Automated Docsify documentation setup
+
+      #     This commit:
+      #     - Creates/updates the Docsify documentation structure
+      #     - Migrates markdown files from help directories
+      #     - Updates the sidebar navigation
+      #     - Sets up a local preview script (preview-docs.sh)"
+            
+      #       # Push changes
+      #       git push
+      #       echo "Successfully committed and pushed documentation changes"
+      #     fi
+      #     echo "::endgroup::"
+
       - name: Commit Changes
         run: |
           echo "::group::Committing changes to repository"
@@ -605,7 +633,7 @@ jobs:
             echo "Successfully committed and pushed documentation changes"
           fi
           echo "::endgroup::"
-
+          
       - name: GitHub Pages Setup Instructions
         if: success()
         run: |
