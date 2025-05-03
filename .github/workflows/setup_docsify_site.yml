@@ -1,0 +1,705 @@
+name: Configure Docsify Documentation Structure
+on:
+  workflow_dispatch:  # Allows manual triggering
+    inputs:
+      theme:
+        description: 'Docsify theme to use (vue, buble, dark, pure)'
+        required: false
+        default: 'vue'
+  push:
+    branches: [main]
+    paths: ['**/[hH][eE][lL][pP]/**']  # Trigger on any changes in help directories, case-insensitive
+
+env:
+  MODULES: "EntraIDAdmin EXOAdmin SCCAdmin SPOAdmin TeamsAdmin"
+
+jobs:
+  setup_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper version tracking
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Create Docsify Structure
+        id: create_structure
+        run: |
+          echo "::group::Setting up base directories"
+          # Create base directories
+          mkdir -p docs
+          mkdir -p docs/assets/images
+          mkdir -p docs/assets/css
+          
+          for module in ${{ env.MODULES }}; do
+            mkdir -p "docs/$module"
+          done
+          
+          touch docs/.nojekyll
+          echo "::endgroup::"
+          
+          echo "::group::Installing Docsify CLI"
+          # Initialize Docsify
+          npm install -g docsify-cli
+          docsify init ./docs
+          echo "::endgroup::"
+          
+          # Determine theme
+          THEME="${{ github.event.inputs.theme || 'vue' }}"
+          echo "Using theme: $THEME"
+          
+          echo "::group::Creating HTML template"
+          # Create customized index.html file
+          cat > docs/index.html << EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>Admin Tools Documentation</title>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+            <meta name="description" content="Documentation for Microsoft 365 Admin Tools">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+            <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/$THEME.css">
+            <link rel="stylesheet" href="assets/css/custom.css">
+          </head>
+          <body>
+            <div id="app"></div>
+            <script>
+              window.\$docsify = {
+                name: 'Admin Tools',
+                repo: '',
+                loadSidebar: true,
+                subMaxLevel: 3,
+                auto2top: true,
+                search: {
+                  maxAge: 86400000,
+                  paths: 'auto',
+                  placeholder: 'Type to search',
+                  noData: 'No results found',
+                  depth: 6,
+                  hideOtherSidebarContent: true
+                },
+                pagination: {
+                  previousText: 'Previous',
+                  nextText: 'Next',
+                  crossChapter: true,
+                  crossChapterText: true,
+                },
+                footer: {
+                  copy: '<span>Admin Tools Documentation &copy; ' + new Date().getFullYear() + '</span>',
+                  auth: '',
+                  pre: '<hr/>',
+                  style: 'text-align: center;'
+                }
+              }
+            </script>
+            <!-- Docsify v4 -->
+            <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+            <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-powershell.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+            <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+          </body>
+          </html>
+          EOF
+          echo "::endgroup::"
+          
+          echo "::group::Creating custom CSS"
+          # Create custom CSS file
+          cat > docs/assets/css/custom.css << 'EOF'
+          /* Custom styles for documentation */
+          :root {
+            --theme-color: #42b983;
+            --theme-color-dark: #35495e;
+          }
+
+          body {
+            font-size: 16px;
+          }
+
+          .sidebar {
+            padding: 1rem;
+          }
+
+          .sidebar-nav strong {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--theme-color-dark);
+            margin-top: 1.5rem;
+            display: block;
+          }
+
+          .markdown-section {
+            max-width: 900px;
+          }
+
+          .markdown-section code {
+            font-size: 0.9rem;
+          }
+
+          .docs-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eaecef;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+          }
+
+          /* Make images responsive */
+          .markdown-section img {
+            max-width: 100%;
+          }
+
+          /* Code block styling */
+          .markdown-section pre {
+            border-radius: 5px;
+          }
+
+          /* Table styling */
+          .markdown-section table {
+            display: table;
+            width: 100%;
+          }
+          
+          .markdown-section table th {
+            background-color: #f8f8f8;
+          }
+          
+          /* Print optimization */
+          @media print {
+            .sidebar, .sidebar-toggle {
+              display: none;
+            }
+            
+            .content {
+              left: 0;
+            }
+          }
+          EOF
+          echo "::endgroup::"
+          
+          # Create main README.md
+          echo "::group::Creating main README.md"
+          cat > docs/README.md << 'EOF'
+          # Admin Tools Documentation
+
+          Welcome to the admin tools documentation. This site contains documentation for various admin tools used for managing Microsoft 365 services.
+
+          ## Available Modules
+
+          EOF
+
+          # Add modules to README
+          for module in ${{ env.MODULES }}; do
+            echo "- [${module}](/${module}/)" >> docs/README.md
+          done
+
+          # Add additional sections
+          cat >> docs/README.md << 'EOF'
+
+          ## Getting Started
+
+          Select a module from the sidebar to view available tools and their documentation.
+
+          ## Contributing
+
+          To contribute to this documentation:
+
+          1. Add or edit markdown files in the `help` directory of the relevant project
+          2. Commit and push your changes to trigger an automatic update of this documentation site
+          EOF
+          echo "::endgroup::"
+
+      - name: Migrate Existing Markdown Files
+        id: migrate_markdown
+        run: |
+          echo "::group::Finding and processing help directories"
+          
+          # Initialize success flag
+          MIGRATION_SUCCESS=true
+          
+          # Clear and create initial sidebar
+          echo "* [Home](/)" > docs/_sidebar.md
+          
+          # Extract all projects first - find help directories for each module
+          declare -A MODULE_PROJECTS
+          for module in ${{ env.MODULES }}; do
+            MODULE_PROJECTS[$module]=""
+          done
+          
+          # Search for projects in their respective module directories
+          for module in ${{ env.MODULES }}; do
+            if [ -d "$module" ]; then
+              echo "Finding projects for module: $module"
+              for project_dir in "$module"/*/; do
+                if [ -d "$project_dir" ]; then
+                  project=$(basename "$project_dir")
+                  # Find help directory case-insensitively
+                  help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
+                  if [ -d "$help_dir" ]; then
+                    echo "  Found project with help: $project in $module"
+                    MODULE_PROJECTS[$module]="${MODULE_PROJECTS[$module]} $project"
+                  fi
+                fi
+              done
+            fi
+          done
+          
+          # For debugging
+          for module in ${{ env.MODULES }}; do
+            echo "Module '$module' has these projects: ${MODULE_PROJECTS[$module]}"
+          done
+          
+          # Process each module one by one and create their sections in sidebar
+          for module in ${{ env.MODULES }}; do
+            echo "Processing module: $module"
+            
+            # Add module heading to sidebar
+            echo "* **${module}**" >> docs/_sidebar.md
+            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
+            
+            # Create module README
+            mkdir -p "docs/$module"
+            echo "# $module Documentation" > "docs/$module/README.md"
+            echo "" >> "docs/$module/README.md" 
+            echo "## Available Tools" >> "docs/$module/README.md"
+            
+            # Process projects for this module if any
+            if [ -n "${MODULE_PROJECTS[$module]}" ]; then
+              for project in ${MODULE_PROJECTS[$module]}; do
+                echo "  Processing project: $project for module $module"
+                
+                # Set paths
+                project_dir="$module/$project"
+                help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
+                
+                if [ -d "$help_dir" ]; then
+                  # Create project directory and README
+                  mkdir -p "docs/$module/$project"
+                  echo "# $project" > "docs/$module/$project/README.md"
+                  echo "" >> "docs/$module/$project/README.md"
+                  echo "Documentation for the $project tool in the $module module." >> "docs/$module/$project/README.md"
+                  
+                  # Add project to module README
+                  echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
+                  
+                  # Add project to sidebar under this module
+                  echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
+                  
+                  # Create images directory for this project
+                  mkdir -p "docs/$module/$project/images"
+                  
+                  # Process all markdown files in the help directory
+                  find "$help_dir" -name "*.md" -type f | while read mdfile; do
+                    filename=$(basename "$mdfile")
+                    basename="${filename%.*}"
+                    
+                    echo "    Processing file: $filename"
+                    
+                    # Process markdown content - fix internal links but preserve external links
+                    awk -v module="$module" -v project="$project" '
+                    BEGIN { in_code_block = 0 }
+                    /^```/ { in_code_block = !in_code_block; print; next }
+                    in_code_block { print; next }
+                    # Fix internal links but preserve external links
+                    {
+                      # This regex matches markdown links that don\'t start with http, https, ftp, mailto
+                      # and updates them to include the module/project path
+                      line = $0
+                      while (match(line, /\[([^\]]+)\]\((?!http|https|ftp|mailto)([^)]+)\)/)) {
+                        linktext = substr(line, RSTART+1, RLENGTH-2)
+                        sub(/\].*/, "", linktext)
+                        link = substr(line, RSTART+length(linktext)+2, RLENGTH-length(linktext)-3)
+                        
+                        # Replace the matched part
+                        before = substr(line, 1, RSTART-1)
+                        after = substr(line, RSTART+RLENGTH)
+                        if (link ~ /^\//) {
+                          # Absolute path link, don't modify
+                          line = before "[" linktext "](" link ")" after
+                        } else {
+                          # Relative link, add module/project prefix
+                          line = before "[" linktext "](/" module "/" project "/" link ")" after
+                        }
+                      }
+                      print line
+                    }
+                    ' "$mdfile" > "docs/$module/$project/$filename"
+                    
+                    # Add file to sidebar (only if not README)
+                    if [ "$basename" != "README" ]; then
+                      echo "    * [$basename](/$module/$project/$filename)" >> docs/_sidebar.md
+                    fi
+                  done
+                  
+                  # Copy images directory if it exists
+                  images_dir=$(find "$help_dir" -type d -name "images" | head -n 1)
+                  if [ -d "$images_dir" ]; then
+                    echo "    Found images directory, copying images..."
+                    cp -r "$images_dir"/* "docs/$module/$project/images/"
+                  fi
+                  
+                  # Look for images in other directories
+                  find "$help_dir" -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.svg" \) | while read imgfile; do
+                    img_basename=$(basename "$imgfile")
+                    echo "    Copying image: $img_basename"
+                    cp "$imgfile" "docs/$module/$project/images/"
+                    
+                    # Update image references in all markdown files
+                    find "docs/$module/$project" -name "*.md" | while read mdfile; do
+                      sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1](/images/$img_basename)|g" "$mdfile"
+                    done
+                  done
+                fi
+              done
+            else
+              echo "  No projects found for module $module"
+              echo "This module does not have any documented tools yet." >> "docs/$module/README.md"
+            fi
+          done
+          
+          # Process root-level projects that might not be in modules
+          echo "Looking for projects at the root level..."
+          for dir in */; do
+            dirname=$(basename "$dir")
+            # Skip if it's a module or a special directory
+            if ! echo "${{ env.MODULES }} docs .git .github" | grep -qw "$dirname"; then
+              echo "Processing root project: $dirname"
+              # Find help directory case-insensitively
+              help_dir=$(find "$dirname" -maxdepth 1 -type d -iname "help" | head -n 1)
+              
+              if [ -d "$help_dir" ]; then
+                echo "  Found help directory: $help_dir"
+                
+                # Create project directory and images directory
+                mkdir -p "docs/$dirname"
+                mkdir -p "docs/$dirname/images"
+                
+                echo "# $dirname Documentation" > "docs/$dirname/README.md"
+                
+                # Add to sidebar as a separate section
+                echo "* **$dirname**" >> docs/_sidebar.md
+                echo "  * [Overview](/$dirname/)" >> docs/_sidebar.md
+                
+                # Process markdown files
+                find "$help_dir" -name "*.md" -type f | while read file; do
+                  filename=$(basename "$file")
+                  basename="${filename%.*}"
+                  
+                  echo "    Processing file: $filename"
+                  
+                  # Process markdown content preserving external links
+                  awk -v dirname="$dirname" '
+                  BEGIN { in_code_block = 0 }
+                  /^```/ { in_code_block = !in_code_block; print; next }
+                  in_code_block { print; next }
+                  # Fix internal links but preserve external links
+                  {
+                    line = $0
+                    while (match(line, /\[([^\]]+)\]\((?!http|https|ftp|mailto)([^)]+)\)/)) {
+                      linktext = substr(line, RSTART+1, RLENGTH-2)
+                      sub(/\].*/, "", linktext)
+                      link = substr(line, RSTART+length(linktext)+2, RLENGTH-length(linktext)-3)
+                      
+                      # Replace the matched part
+                      before = substr(line, 1, RSTART-1)
+                      after = substr(line, RSTART+RLENGTH)
+                      if (link ~ /^\//) {
+                        # Absolute path link, don't modify
+                        line = before "[" linktext "](" link ")" after
+                      } else {
+                        # Relative link, add dirname prefix
+                        line = before "[" linktext "](/" dirname "/" link ")" after
+                      }
+                    }
+                    print line
+                  }
+                  ' "$file" > "docs/$dirname/$filename"
+                  
+                  # Add to sidebar
+                  if [ "$basename" != "README" ]; then
+                    echo "    * [$basename](/$dirname/$filename)" >> docs/_sidebar.md
+                  fi
+                done
+                
+                # Copy images directory if it exists
+                images_dir=$(find "$help_dir" -type d -name "images" | head -n 1)
+                if [ -d "$images_dir" ]; then
+                  echo "    Found images directory, copying images..."
+                  cp -r "$images_dir"/* "docs/$dirname/images/"
+                fi
+                
+                # Look for images in other directories
+                find "$help_dir" -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.svg" \) | while read imgfile; do
+                  img_basename=$(basename "$imgfile")
+                  echo "    Copying image: $img_basename"
+                  cp "$imgfile" "docs/$dirname/images/"
+                  
+                  # Update image references in all markdown files
+                  find "docs/$dirname" -name "*.md" | while read mdfile; do
+                    sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1](/images/$img_basename)|g" "$mdfile"
+                  done
+                done
+              fi
+            fi
+          done
+          
+          echo "::endgroup::"
+          
+          # Add special sections to sidebar
+          echo "* **Resources**" >> docs/_sidebar.md
+          echo "  * [FAQ](/resources/faq)" >> docs/_sidebar.md
+          
+          # Create resources section
+          mkdir -p docs/resources
+          cat > docs/resources/faq.md << 'EOF'
+          # Frequently Asked Questions
+
+          This page contains frequently asked questions about the admin tools.
+
+          ## General Questions
+
+          ### How do I report an issue?
+
+          You can report issues through the GitHub repository issue tracker.
+
+          ### How do I contribute to documentation?
+
+          To contribute to the documentation, add or edit markdown files in the `help` directory of the relevant project.
+          EOF
+          
+          echo "migration_status=$MIGRATION_SUCCESS" >> $GITHUB_OUTPUT
+
+      - name: Generate Search Index
+        if: steps.migrate_markdown.outputs.migration_status != 'false'
+        run: |
+          echo "::group::Generating search index"
+          # Create a simple script to generate search index
+          cat > generate-search-index.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          // Recursively get all markdown files
+          function getMarkdownFiles(dir, fileList = []) {
+            const files = fs.readdirSync(dir);
+            
+            files.forEach(file => {
+              const filePath = path.join(dir, file);
+              if (fs.statSync(filePath).isDirectory() && file !== '.git' && file !== 'node_modules') {
+                getMarkdownFiles(filePath, fileList);
+              } else if (path.extname(file) === '.md') {
+                fileList.push(filePath);
+              }
+            });
+            
+            return fileList;
+          }
+
+          // Create search index
+          const docsPath = 'docs';
+          const searchIndex = {};
+          
+          const markdownFiles = getMarkdownFiles(docsPath);
+          markdownFiles.forEach(file => {
+            const relativePath = file.replace(docsPath + '/', '');
+            const content = fs.readFileSync(file, 'utf8');
+            
+            // Extract title and content
+            const titleMatch = content.match(/^# (.*)/m);
+            const title = titleMatch ? titleMatch[1] : path.basename(file, '.md');
+            
+            // Clean up content for search indexing
+            const cleanContent = content
+              .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+              .replace(/#+\s(.*)/g, '$1')     // Extract headings
+              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Extract link text
+              .substring(0, 5000);            // Limit size
+            
+            searchIndex[relativePath] = {
+              title,
+              content: cleanContent
+            };
+          });
+
+          fs.writeFileSync(path.join(docsPath, 'search-index.json'), JSON.stringify(searchIndex, null, 2));
+          console.log(`Generated search index with ${Object.keys(searchIndex).length} entries`);
+          EOF
+          
+          node generate-search-index.js
+          echo "::endgroup::"
+
+      - name: Generate Script for Previewing Documentation Locally
+        run: |
+          echo "::group::Creating preview script"
+          # Create a convenience script for local preview
+          cat > preview-docs.sh << 'EOF'
+          #!/bin/bash
+          
+          # Prerequisites check
+          if ! command -v npm &> /dev/null; then
+            echo "npm is not installed. Please install Node.js and npm first."
+            exit 1
+          fi
+          
+          # Install docsify-cli if not already installed
+          if ! command -v docsify &> /dev/null; then
+            echo "Installing docsify-cli..."
+            npm install -g docsify-cli
+          fi
+          
+          echo "Starting documentation preview server on http://localhost:3000"
+          cd docs && docsify serve
+          EOF
+          
+          chmod +x preview-docs.sh
+          echo "::endgroup::"
+
+      - name: Test Documentation Structure
+        run: |
+          echo "::group::Verifying documentation structure"
+          # Check if essential files exist
+          if [ ! -f "docs/index.html" ]; then
+            echo "ERROR: docs/index.html not found"
+            exit 1
+          fi
+          
+          if [ ! -f "docs/_sidebar.md" ]; then
+            echo "ERROR: docs/_sidebar.md not found"
+            exit 1
+          fi
+          
+          if [ ! -f "docs/README.md" ]; then
+            echo "ERROR: docs/README.md not found"
+            exit 1
+          fi
+          
+          # Check if any content was created
+          MODULE_COUNT=$(ls -1 docs/ | grep -v "^\." | grep -v "index.html" | grep -v "_sidebar.md" | grep -v "README.md" | grep -v "assets" | wc -l)
+          
+          if [ "$MODULE_COUNT" -eq 0 ]; then
+            echo "WARNING: No module directories were created. Check your repository structure."
+          else
+            echo "Success! Created documentation structure with $MODULE_COUNT module directories."
+          fi
+          echo "::endgroup::"
+
+      - name: Commit Changes
+        run: |
+          echo "::group::Committing changes to repository"
+          git config --global user.name "Docsify Auto Setup"
+          git config --global user.email "docsify-bot@noreply.github.com"
+          
+          # Add all documentation files
+          git add docs/ preview-docs.sh
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            # Create commit with detailed message
+            git commit -m "Automated Docsify documentation setup
+
+          This commit:
+          - Creates/updates the Docsify documentation structure
+          - Migrates markdown files from help directories
+          - Updates the sidebar navigation
+          - Sets up a local preview script (preview-docs.sh)"
+            
+            # Push changes
+            git push
+            echo "Successfully committed and pushed documentation changes"
+          fi
+          echo "::endgroup::"
+          
+      - name: GitHub Pages Setup Instructions
+        if: success()
+        run: |
+          echo "::group::GitHub Pages Setup Instructions"
+          echo "To set up GitHub Pages for your documentation, please follow these steps:"
+          echo ""
+          echo "1. Go to your repository on GitHub"
+          echo "2. Click on 'Settings'"
+          echo "3. Select 'Pages' from the left sidebar"
+          echo "4. Under 'Build and deployment', select:"
+          echo "   - Source: 'Deploy from a branch'"
+          echo "   - Branch: 'main'"
+          echo "   - Folder: '/docs'"
+          echo "5. Click 'Save'"
+          echo ""
+          echo "OR"
+          echo ""
+          echo "Create a new file at .github/workflows/deploy-docs.yml with the following content:"
+          echo ""
+          cat << 'EOF'
+          name: Deploy Documentation to GitHub Pages
+          on:
+            push:
+              branches: [main]
+              paths: ['docs/**']
+            workflow_dispatch:
+
+          permissions:
+            contents: read
+            pages: write
+            id-token: write
+
+          concurrency:
+            group: "pages"
+            cancel-in-progress: false
+
+          jobs:
+            deploy:
+              environment:
+                name: github-pages
+                url: ${{ steps.deployment.outputs.page_url }}
+              runs-on: ubuntu-latest
+              steps:
+                - name: Checkout
+                  uses: actions/checkout@v4
+                
+                - name: Setup Pages
+                  uses: actions/configure-pages@v4
+                
+                - name: Upload artifact
+                  uses: actions/upload-pages-artifact@v1
+                  with:
+                    path: 'docs'
+                
+                - name: Deploy to GitHub Pages
+                  id: deployment
+                  uses: actions/deploy-pages@v1
+          EOF
+          echo "::endgroup::"
+
+      - name: Output Documentation Summary
+        run: |
+          echo "::group::Documentation Summary"
+          
+          # Count total documents
+          TOTAL_DOCS=$(find docs -name "*.md" | wc -l)
+          
+          echo "Documentation setup complete!"
+          echo "----------------------------"
+          echo "Total documentation files: $TOTAL_DOCS"
+          echo "Modules:"
+          
+          # Get counts for each module
+          for module in ${{ env.MODULES }}; do
+            if [ -d "docs/$module" ]; then
+              MODULE_DOCS=$(find "docs/$module" -name "*.md" | wc -l)
+              echo "- $module: $MODULE_DOCS files"
+            fi
+          done
+          
+          echo ""
+          echo "To preview the documentation locally, run: ./preview-docs.sh"
+          echo "::endgroup::"
