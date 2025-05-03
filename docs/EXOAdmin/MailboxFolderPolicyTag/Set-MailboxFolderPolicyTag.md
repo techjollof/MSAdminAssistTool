@@ -54,7 +54,7 @@ Follow this guide to configure OAuth for EWS:
 ### Configure Delegated Permissions
 
 1. Go to **Manifest** of your app
-   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/./images/image8.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/image8.png)
 
 2. Modify the `requiredResourceAccess` section:
 
