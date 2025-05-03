@@ -1,0 +1,28 @@
+* [Home](/)
+* **EntraIDAdmin**
+  * [Overview](/EntraIDAdmin/)
+* **EXOAdmin**
+  * [Overview](/EXOAdmin/)
+* **SCCAdmin**
+  * [Overview](/SCCAdmin/)
+* **SPOAdmin**
+  * [Overview](/SPOAdmin/)
+* **TeamsAdmin**
+  * [Overview](/TeamsAdmin/)
+  * [LicenseInfoLastLogin](/EntraIDAdmin/LicenseInfoLastLogin/)
+    * [Get-LicenseAndLastSignInReport](/EntraIDAdmin/LicenseInfoLastLogin/Get-LicenseAndLastSignInReport.md)
+  * [PasswordExpiryNotifier](/EntraIDAdmin/PasswordExpiryNotifier/)
+    * [Register-AppOnly](/EntraIDAdmin/PasswordExpiryNotifier/Register-AppOnly.md)
+    * [PasswordExpirationNotifier](/EntraIDAdmin/PasswordExpiryNotifier/PasswordExpirationNotifier.md)
+    * [AdvancedPasswordExpirationNotifier](/EntraIDAdmin/PasswordExpiryNotifier/AdvancedPasswordExpirationNotifier.md)
+    * [Config](/EntraIDAdmin/PasswordExpiryNotifier/Config.md)
+    * [New-SelfSignedCertificate](/EntraIDAdmin/PasswordExpiryNotifier/New-SelfSignedCertificate.md)
+  * [UserLicensesManager](/EntraIDAdmin/UserLicensesManager/)
+    * [Perform-MgUserLicenseUpgrade](/EntraIDAdmin/UserLicensesManager/Perform-MgUserLicenseUpgrade.md)
+    * [Provision-MgUserAccount](/EntraIDAdmin/UserLicensesManager/Provision-MgUserAccount.md)
+  * [MailboxFolderPolicyTag](/EXOAdmin/MailboxFolderPolicyTag/)
+    * [Set-MailboxFolderPolicyTag](/EXOAdmin/MailboxFolderPolicyTag/Set-MailboxFolderPolicyTag.md)
+  * [MoveEmails](/EXOAdmin/MoveEmails/)
+    * [Move-MailAcrossFolders](/EXOAdmin/MoveEmails/Move-MailAcrossFolders.md)
+* **Resources**
+  * [FAQ](/resources/faq)
