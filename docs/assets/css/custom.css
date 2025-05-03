@@ -1,37 +1,69 @@
-/* Custom styles for the documentation */
+/* Custom styles for documentation */
 :root {
   --theme-color: #42b983;
-  --heading-color: #34495e;
-  --text-color: #34495e;
-  --sidebar-background: #f8f8f8;
+  --theme-color-dark: #35495e;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
 }
 
 .sidebar {
-  background-color: var(--sidebar-background);
   padding: 1rem;
 }
 
-.content {
-  padding: 2rem;
+.sidebar-nav strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--theme-color-dark);
+  margin-top: 1.5rem;
+  display: block;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: var(--heading-color);
+.markdown-section {
+  max-width: 900px;
 }
 
-.markdown-section a {
-  color: var(--theme-color);
+.markdown-section code {
+  font-size: 0.9rem;
 }
 
 .docs-footer {
   text-align: center;
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eaecef;
   font-size: 0.85rem;
-  color: #888;
+  color: #7f8c8d;
+}
+
+/* Make images responsive */
+.markdown-section img {
+  max-width: 100%;
+}
+
+/* Code block styling */
+.markdown-section pre {
+  border-radius: 5px;
+}
+
+/* Table styling */
+.markdown-section table {
+  display: table;
+  width: 100%;
+}
+
+.markdown-section table th {
+  background-color: #f8f8f8;
+}
+
+/* Print optimization */
+@media print {
+  .sidebar, .sidebar-toggle {
+    display: none;
+  }
+  
+  .content {
+    left: 0;
+  }
 }

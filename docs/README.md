@@ -1,6 +1,6 @@
 # Admin Tools Documentation
 
-Welcome to the Admin Tools documentation site. This documentation is automatically generated from the project repositories.
+Welcome to the admin tools documentation. This site contains documentation for various admin tools used for managing Microsoft 365 services.
 
 ## Available Modules
 
@@ -10,10 +10,13 @@ Welcome to the Admin Tools documentation site. This documentation is automatical
 - [SPOAdmin](/SPOAdmin/)
 - [TeamsAdmin](/TeamsAdmin/)
 
-## Quick Links
+## Getting Started
 
-- [Getting Started](/getting-started)
+Select a module from the sidebar to view available tools and their documentation.
 
-## About This Documentation
+## Contributing
 
-This documentation is built using [Docsify](https://docsify.js.org/) and is automatically updated when changes are made to the help directories in the source repositories.
+To contribute to this documentation:
+
+1. Add or edit markdown files in the `help` directory of the relevant project
+2. Commit and push your changes to trigger an automatic update of this documentation site
