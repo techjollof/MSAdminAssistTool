@@ -230,19 +230,6 @@ jobs:
           EOF
           echo "::endgroup::"
 
-          # Create _sidebar.md
-          echo "::group::Creating sidebar"
-          cat > docs/_sidebar.md << 'EOF'
-          * [Home](/)
-          EOF
-
-          # Add modules to sidebar
-          for module in ${{ env.MODULES }}; do
-            echo "* **${module}**" >> docs/_sidebar.md
-            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
-          done
-          echo "::endgroup::"
-
       - name: Migrate Existing Markdown Files
         id: migrate_markdown
         run: |
@@ -251,19 +238,15 @@ jobs:
           # Initialize success flag
           MIGRATION_SUCCESS=true
           
-          # First clear the _sidebar.md file and recreate it with just the home link
-          cat > docs/_sidebar.md << 'EOF'
-          * [Home](/)
-          EOF
-          
-          # Add modules to sidebar
-          for module in ${{ env.MODULES }}; do
-            echo "* **${module}**" >> docs/_sidebar.md
-            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
-          done
+          # Initialize sidebar content
+          echo "* [Home](/)" > docs/_sidebar.md
           
           # Process modules
           for module in ${{ env.MODULES }}; do
+            # Add module to sidebar
+            echo "* **${module}**" >> docs/_sidebar.md
+            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
+            
             if [ -d "$module" ]; then
               # Create module README
               echo "# $module Documentation" > "docs/$module/README.md"
@@ -305,7 +288,7 @@ jobs:
                     # Add project to module README
                     echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
                     
-                    # Add project to sidebar
+                    # Add project to current module sidebar
                     echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
                     
                     # Find and process markdown files
@@ -396,7 +379,7 @@ jobs:
                 mkdir -p "docs/$dirname"
                 echo "# $dirname Documentation" > "docs/$dirname/README.md"
                 
-                # Add to sidebar
+                # Add to sidebar as a separate section
                 echo "* **$dirname**" >> docs/_sidebar.md
                 echo "  * [Overview](/$dirname/)" >> docs/_sidebar.md
                 
@@ -577,34 +560,6 @@ jobs:
             echo "Success! Created documentation structure with $MODULE_COUNT module directories."
           fi
           echo "::endgroup::"
-
-      # - name: Commit Changes
-      #   run: |
-      #     echo "::group::Committing changes to repository"
-      #     git config --global user.name "Docsify Auto Setup"
-      #     git config --global user.email "docsify-bot@noreply.github.com"
-          
-      #     # Add all documentation files
-      #     git add docs/ preview-docs.sh
-          
-      #     # Check if there are changes to commit
-      #     if git diff --staged --quiet; then
-      #       echo "No changes to commit"
-      #     else
-      #       # Create commit with detailed message
-      #       git commit -m "Automated Docsify documentation setup
-
-      #     This commit:
-      #     - Creates/updates the Docsify documentation structure
-      #     - Migrates markdown files from help directories
-      #     - Updates the sidebar navigation
-      #     - Sets up a local preview script (preview-docs.sh)"
-            
-      #       # Push changes
-      #       git push
-      #       echo "Successfully committed and pushed documentation changes"
-      #     fi
-      #     echo "::endgroup::"
 
       - name: Commit Changes
         run: |
