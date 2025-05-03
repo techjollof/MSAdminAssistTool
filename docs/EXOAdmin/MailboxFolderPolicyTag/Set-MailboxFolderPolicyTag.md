@@ -21,16 +21,16 @@ The MRM Retention Policy is used to control how emails are retained, archived, o
 * MSAL.PS module must be installed
 * EWS OAuth must be configured via Azure AD Application
 * EWS Managed API (included in program folder)
-* [\1](/EXOAdmin/MailboxFolderPolicyTag/\2) to retrieve Retention Flag values
+* [MFCMAPI](https://github.com/stephenegriffin/mfcmapi/releases) to retrieve Retention Flag values
 
 ## Reminder on OAuth Setup
 
 Follow this guide to configure OAuth for EWS:
-🔗 [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
+🔗 [How to authenticate an EWS application by using OAuth](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth)
 
 ## Azure App Registration Steps
 
-1. Go to [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
+1. Go to [https://aad.portal.azure.com](https://aad.portal.azure.com)
 
 2. Navigate to:
    **Azure Active Directory → App registrations → New registration**
@@ -54,7 +54,7 @@ Follow this guide to configure OAuth for EWS:
 ### Configure Delegated Permissions
 
 1. Go to **Manifest** of your app
-   ![Step Screenshot](./images/image8.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/./images/image8.png)
 
 2. Modify the `requiredResourceAccess` section:
 
@@ -74,7 +74,7 @@ Follow this guide to configure OAuth for EWS:
 
 3. Save the manifest
 4. Confirm `EWS.AccessAsUser.All` is shown under API Permissions
-   ![Step Screenshot](./images/API_Permissions.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/API_Permissions.png)
 
 ## Setup Test Mailbox (Optional)
 
@@ -83,7 +83,7 @@ Follow this guide to configure OAuth for EWS:
 
 ## Create Personal Retention Tag
 
-1. Go to: [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
+1. Go to: [Microsoft Purview Portal](https://compliance.microsoft.com)
 
 2. Navigate: **Data lifecycle management → Exchange (legacy)** > Create a new **personal tag** > Create a new MRM **retention policy** >  Add the personal tag to the policy
     
@@ -93,11 +93,11 @@ Follow this guide to configure OAuth for EWS:
 
     From **Exchange admin center** > Recipients > Mailboxes > Select **mailboxes** > choose the **test mailbox** or **shared mailbox** >
     - In the side pop-up menu, Select **Mailbox** tab > Under the **Mailbox policies** > Click **Manage retention policies** under **Retention policy** section > Select the custom retention policy > Save
-      ![Alt text](./images/Assigned-RetentionPolicy.png)
+      ![Alt text](/EXOAdmin/MailboxFolderPolicyTag/images/Assigned-RetentionPolicy.png)
     - Allow some time for the changes to propagate and the personal policy tags will show in the mailbox. Eg
-    ![Alt text](./images/ValidateAssignedPolicy.png)
+    ![Alt text](/EXOAdmin/MailboxFolderPolicyTag/images/ValidateAssignedPolicy.png)
     - Outlook on the web view for the assigned policy to the folder _**3DaysMoveDataArchive**_.
-      ![Alt text](./images/3daysPolicy.png)
+      ![Alt text](/EXOAdmin/MailboxFolderPolicyTag/images/3daysPolicy.png)
 
 🧠 **Note:** Archive tags will not appear in Outlook if archive is disabled.
 
@@ -111,18 +111,18 @@ Follow this guide to configure OAuth for EWS:
    
    * *Use MDS ONLINE flag when calling OpenMsgStore*
    * *Use MAPI\_NO CACHE flag when calling OpenEntry*
-     ![Step Screenshot](./images/MRM_UI_MFCMAPI_Options.png)
+     ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/MRM_UI_MFCMAPI_Options.png)
 
 4. Go to `Session → Logon`
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_Logon.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/MRM_UI_MFCMAPI_Logon.png)
 
 5. Expand the mailbox store
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_OpenStore.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/MRM_UI_MFCMAPI_OpenStore.png)
 
 6. Navigate: `Root Container → Top of Information Store → [Target Folder]`
 
 7. Find `PR_RETENTION_FLAGS` and copy the value (e.g., 144)
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_RetentionFlag.png)
+   ![Step Screenshot](/EXOAdmin/MailboxFolderPolicyTag/images/MRM_UI_MFCMAPI_RetentionFlag.png)
 
 ## Required Parameters
 
@@ -190,16 +190,16 @@ Then run:
 * **Jad** — Helped review and test the script
 * **Akashb** — Original blog and example
 
-  - [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-  - [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
+  - [Stamping Archive Policy Tag using EWS Managed API from PowerShell (Exchange 2010)](https://learn.microsoft.com/en-us/archive/blogs/akashb/stamping-archive-policy-tag-using-ews-managed-api-from-powershellexchange-2010)
+  - [Stamping Retention Policy Tag using EWS Managed API 1.1 from PowerShell (Exchange 2010)](https://learn.microsoft.com/en-us/archive/blogs/akashb/stamping-retention-policy-tag-using-ews-managed-api-1-1-from-powershellexchange-2010)
 
 ## References
 
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
-- [\1](/EXOAdmin/MailboxFolderPolicyTag/\2)
+- [Stamping Archive Policy Tag using EWS Managed API from PowerShell (Exchange 2010)](https://learn.microsoft.com/en-us/archive/blogs/akashb/stamping-archive-policy-tag-using-ews-managed-api-from-powershellexchange-2010)
+- [Stamping Retention Policy Tag using EWS Managed API 1.1 from PowerShell (Exchange 2010)](https://learn.microsoft.com/en-us/archive/blogs/akashb/stamping-retention-policy-tag-using-ews-managed-api-1-1-from-powershellexchange-2010)
+- [OAuth 2.0 authentication with Azure Active Directory](https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/auth-oauth2)
+- [Authentication and EWS in Exchange](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/authentication-and-ews-in-exchange)
+- [Authenticate an EWS application by using OAuth](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-authenticate-an-ews-application-by-using-oauth)
+- [Understanding Retention Tags and Retention Policies](https://technet.microsoft.com/en-us/library/dd297955.aspx)
+- [Deploying Messaging Records Management](https://technet.microsoft.com/en-us/library/bb123548.aspx)
+- [Messaging Records Management (MRM) and Retention Policies in Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/troubleshoot/retention/mrm-and-retention-policy)

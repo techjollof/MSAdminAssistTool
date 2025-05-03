@@ -2,26 +2,26 @@
 
 ## 📑 Table of Contents
 
-- [📘 Synopsis](#-synopsis)
-- [🧩 Available Scripts](#-available-scripts)
-  - [📦 `About Perform-MgUserLicenseUpgrade.ps1`](#-about-perform-mguserlicenseupgradeps1)
-    - [📝 Overview](#-overview)
-    - [🚀 Key Features](#-key-features)
-    - [📌 Parameters](#-parameters)
-    - [💡 Usage Examples](#-usage-examples)
-  - [👥 `Provision-MgUserAccount.ps1`](#-provision-mguseraccountps1)
-    - [📄 Overview](#-overview-1)
-    - [🚀 Key Features](#-key-features-1)
-    - [📌 Parameters](#-parameters-1)
-    - [💡 Usage Examples](#-usage-examples-1)
-- [📂 CSV File Formats](#-csv-file-formats)
-- [📁 Output & Logging](#-output--logging)
-- [🔐 Prerequisites & Permissions](#-prerequisites--permissions)
-  - [🧰 Required Modules](#-required-modules)
-  - [🔑 Authentication](#-authentication)
-  - [📋 Required Graph Permissions](#-required-graph-permissions)
-- [🔒 Security Best Practices](#-security-best-practices)
-- [📚 References](#-references)
+- [📘 Synopsis](/EntraIDAdmin/UserLicensesManager/#-synopsis)
+- [🧩 Available Scripts](/EntraIDAdmin/UserLicensesManager/#-available-scripts)
+  - [📦 `About Perform-MgUserLicenseUpgrade.ps1`](/EntraIDAdmin/UserLicensesManager/#-about-perform-mguserlicenseupgradeps1)
+    - [📝 Overview](/EntraIDAdmin/UserLicensesManager/#-overview)
+    - [🚀 Key Features](/EntraIDAdmin/UserLicensesManager/#-key-features)
+    - [📌 Parameters](/EntraIDAdmin/UserLicensesManager/#-parameters)
+    - [💡 Usage Examples](/EntraIDAdmin/UserLicensesManager/#-usage-examples)
+  - [👥 `Provision-MgUserAccount.ps1`](/EntraIDAdmin/UserLicensesManager/#-provision-mguseraccountps1)
+    - [📄 Overview](/EntraIDAdmin/UserLicensesManager/#-overview-1)
+    - [🚀 Key Features](/EntraIDAdmin/UserLicensesManager/#-key-features-1)
+    - [📌 Parameters](/EntraIDAdmin/UserLicensesManager/#-parameters-1)
+    - [💡 Usage Examples](/EntraIDAdmin/UserLicensesManager/#-usage-examples-1)
+- [📂 CSV File Formats](/EntraIDAdmin/UserLicensesManager/#-csv-file-formats)
+- [📁 Output & Logging](/EntraIDAdmin/UserLicensesManager/#-output--logging)
+- [🔐 Prerequisites & Permissions](/EntraIDAdmin/UserLicensesManager/#-prerequisites--permissions)
+  - [🧰 Required Modules](/EntraIDAdmin/UserLicensesManager/#-required-modules)
+  - [🔑 Authentication](/EntraIDAdmin/UserLicensesManager/#-authentication)
+  - [📋 Required Graph Permissions](/EntraIDAdmin/UserLicensesManager/#-required-graph-permissions)
+- [🔒 Security Best Practices](/EntraIDAdmin/UserLicensesManager/#-security-best-practices)
+- [📚 References](/EntraIDAdmin/UserLicensesManager/#-references)
 
 ## 📘 Synopsis
 
@@ -122,7 +122,7 @@ Perform-MgUserLicenseUpgrade -UserIds ".\all_users.csv" -LicenseToRemove "SPE_E3
 
 > Maintains user-specific plan customizations (like disabled Teams or Yammer) through license changes.
 
-📄 **More Details**: [Perform-MgUserLicenseUpgrade.md](./Perform-MgUserLicenseUpgrade.md)
+📄 **More Details**: [Perform-MgUserLicenseUpgrade.md](/EntraIDAdmin/UserLicensesManager/./Perform-MgUserLicenseUpgrade.md)
 
 ## 👥 `Provision-MgUserAccount.ps1`
 
@@ -211,7 +211,7 @@ Automates the creation of new Microsoft 365 user accounts, including **password 
 
 > End-to-end onboarding scenario with custom report path and all options enabled.
 
-📄 **Full details**: [Provision-MgUserAccount.md](./Provision-MgUserAccount.md)
+📄 **Full details**: [Provision-MgUserAccount.md](/EntraIDAdmin/UserLicensesManager/./Provision-MgUserAccount.md)
 
 ## 📂 CSV File Formats
 
@@ -268,6 +268,6 @@ Connect-MgGraph -Scopes "User.ReadWrite.All", "Directory.ReadWrite.All"
 
 ## 📚 References
 
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
+- [📖 Microsoft Graph API Docs](https://learn.microsoft.com/en-us/graph/)
+- [📘 Microsoft Graph PowerShell SDK](https://learn.microsoft.com/en-us/powershell/microsoftgraph/)
+- [📋 Microsoft 365 Licensing Guide](https://learn.microsoft.com/en-us/microsoft-365/)

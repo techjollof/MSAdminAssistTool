@@ -1,4 +1,4 @@
 # TeamsAdmin Documentation
 
 ## Available Tools
-This module does not have any documented tools yet.
+- [TeamsBulkNumberAssignment](/TeamsAdmin/TeamsBulkNumberAssignment/)

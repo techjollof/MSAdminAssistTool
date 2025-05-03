@@ -296,6 +296,6 @@ graph TD
 
 ## 📚 References
 
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
-- [\1](/EntraIDAdmin/UserLicensesManager/\2)
+- [Microsoft Graph API Reference – Users](https://learn.microsoft.com/en-us/graph/api/resources/user)
+- [Graph PowerShell SDK Docs](https://learn.microsoft.com/en-us/powershell/microsoftgraph/overview)
+- [License Plans and SKUs](https://learn.microsoft.com/en-us/azure/active-directory/enterprise-users/licensing-service-plan-reference)
