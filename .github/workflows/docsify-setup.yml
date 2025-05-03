@@ -230,19 +230,6 @@ jobs:
           EOF
           echo "::endgroup::"
 
-          # Create _sidebar.md
-          echo "::group::Creating sidebar"
-          cat > docs/_sidebar.md << 'EOF'
-          * [Home](/)
-          EOF
-
-          # Add modules to sidebar
-          for module in ${{ env.MODULES }}; do
-            echo "* **${module}**" >> docs/_sidebar.md
-            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
-          done
-          echo "::endgroup::"
-
       - name: Migrate Existing Markdown Files
         id: migrate_markdown
         run: |
@@ -251,130 +238,101 @@ jobs:
           # Initialize success flag
           MIGRATION_SUCCESS=true
           
-          # First clear the _sidebar.md file and recreate it with just the home link
-          cat > docs/_sidebar.md << 'EOF'
-          * [Home](/)
-          EOF
+          # Clear and create initial sidebar
+          echo "* [Home](/)" > docs/_sidebar.md
           
-          # Add modules to sidebar
+          # Extract all projects first - find help directories for each module
+          declare -A MODULE_PROJECTS
           for module in ${{ env.MODULES }}; do
-            echo "* **${module}**" >> docs/_sidebar.md
-            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
+            MODULE_PROJECTS[$module]=""
           done
           
-          # Process modules
+          # Search for projects in their respective module directories
           for module in ${{ env.MODULES }}; do
             if [ -d "$module" ]; then
-              # Create module README
-              echo "# $module Documentation" > "docs/$module/README.md"
-              echo "" >> "docs/$module/README.md" 
-              echo "## Available Tools" >> "docs/$module/README.md"
-              
-              echo "Processing module: $module"
-              
-              # Track projects for deduplication
-              declare -A processed_projects=()
-              
-              # Process projects within the module
+              echo "Finding projects for module: $module"
               for project_dir in "$module"/*/; do
                 if [ -d "$project_dir" ]; then
                   project=$(basename "$project_dir")
-                  
-                  # Skip if we've already processed this project
-                  if [[ ${processed_projects[$project]} ]]; then
-                    echo "  - Skipping duplicate project: $project (already processed)"
-                    continue
-                  fi
-                  
-                  # Mark project as processed
-                  processed_projects[$project]=1
-                  
-                  echo "  - Processing project: $project"
-                  
                   # Find help directory case-insensitively
                   help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
                   if [ -d "$help_dir" ]; then
-                    echo "    Found help directory: $help_dir"
-                    
-                    # Create project directory and README
-                    mkdir -p "docs/$module/$project"
-                    echo "# $project" > "docs/$module/$project/README.md"
-                    echo "" >> "docs/$module/$project/README.md"
-                    echo "Documentation for the $project tool in the $module module." >> "docs/$module/$project/README.md"
-                    
-                    # Add project to module README
-                    echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
-                    
-                    # Add project to sidebar
-                    echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
-                    
-                    # Find and process markdown files
-                    MD_FILES_COUNT=0
-                    echo "    Looking for markdown files in $help_dir"
-                    
-                    # Track files for deduplication
-                    declare -A processed_files=()
-                    
-                    # Process markdown files
-                    find "$help_dir" -name "*.md" -type f | while read file; do
-                      filename=$(basename "$file")
-                      basename="${filename%.*}"
-                      
-                      # Skip if we've already processed this file
-                      if [[ ${processed_files[$basename]} ]]; then
-                        echo "      Skipping duplicate file: $filename (basename already processed)"
-                        continue
-                      fi
-                      
-                      # Mark file as processed
-                      processed_files[$basename]=1
-                      
-                      echo "      Processing file: $filename"
-                      
-                      # Process markdown content - fix internal links and any other transformations
-                      awk '
-                      BEGIN { in_code_block = 0 }
-                      /^```/ { in_code_block = !in_code_block; print; next }
-                      in_code_block { print; next }
-                      /\[.*\]\((?!http|https|ftp|mailto)/ { 
-                        gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$module'/'$project'/\\2)") 
-                      }
-                      { print }
-                      ' "$file" > "docs/$module/$project/$filename"
-                      
-                      # Add file to project sidebar (only if not README)
-                      if [ "$basename" != "README" ]; then
-                        echo "    * [$basename](/$module/$project/$filename)" >> docs/_sidebar.md
-                      fi
-                      
-                      MD_FILES_COUNT=$((MD_FILES_COUNT + 1))
-                    done
-                    
-                    if [ $MD_FILES_COUNT -eq 0 ]; then
-                      echo "    WARNING: No markdown files found in $help_dir"
-                      # Add placeholder documentation if no markdown files found
-                      echo "No documentation available yet. Please add markdown files to the help directory." >> "docs/$module/$project/README.md"
-                    else
-                      echo "    Added $MD_FILES_COUNT markdown files from $help_dir"
-                    fi
-                  else
-                    echo "    WARNING: No help directory found for $project"
-                    # Create placeholder for projects without help directory
-                    mkdir -p "docs/$module/$project"
-                    echo "# $project" > "docs/$module/$project/README.md"
-                    echo "" >> "docs/$module/$project/README.md"
-                    echo "Documentation for this tool is not available yet." >> "docs/$module/$project/README.md"
-                    
-                    # Add to sidebar
-                    echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
+                    echo "  Found project with help: $project in $module"
+                    MODULE_PROJECTS[$module]="${MODULE_PROJECTS[$module]} $project"
                   fi
                 fi
               done
+            fi
+          done
+          
+          # For debugging
+          for module in ${{ env.MODULES }}; do
+            echo "Module '$module' has these projects: ${MODULE_PROJECTS[$module]}"
+          done
+          
+          # Process each module one by one and create their sections in sidebar
+          for module in ${{ env.MODULES }}; do
+            echo "Processing module: $module"
+            
+            # Add module heading to sidebar
+            echo "* **${module}**" >> docs/_sidebar.md
+            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
+            
+            # Create module README
+            mkdir -p "docs/$module"
+            echo "# $module Documentation" > "docs/$module/README.md"
+            echo "" >> "docs/$module/README.md" 
+            echo "## Available Tools" >> "docs/$module/README.md"
+            
+            # Process projects for this module if any
+            if [ -n "${MODULE_PROJECTS[$module]}" ]; then
+              for project in ${MODULE_PROJECTS[$module]}; do
+                echo "  Processing project: $project for module $module"
+                
+                # Set paths
+                project_dir="$module/$project"
+                help_dir=$(find "$project_dir" -maxdepth 1 -type d -iname "help" | head -n 1)
+                
+                if [ -d "$help_dir" ]; then
+                  # Create project directory and README
+                  mkdir -p "docs/$module/$project"
+                  echo "# $project" > "docs/$module/$project/README.md"
+                  echo "" >> "docs/$module/$project/README.md"
+                  echo "Documentation for the $project tool in the $module module." >> "docs/$module/$project/README.md"
+                  
+                  # Add project to module README
+                  echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
+                  
+                  # Add project to sidebar under this module
+                  echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
+                  
+                  # Process all markdown files in the help directory
+                  find "$help_dir" -name "*.md" -type f | while read mdfile; do
+                    filename=$(basename "$mdfile")
+                    basename="${filename%.*}"
+                    
+                    echo "    Processing file: $filename"
+                    
+                    # Process markdown content - fix internal links
+                    awk '
+                    BEGIN { in_code_block = 0 }
+                    /^```/ { in_code_block = !in_code_block; print; next }
+                    in_code_block { print; next }
+                    /\[.*\]\((?!http|https|ftp|mailto)/ { 
+                      gsub(/\[([^]]*)\]\((?!http|https|ftp|mailto)([^)]*)\)/, "[\\1](/'$module'/'$project'/\\2)") 
+                    }
+                    { print }
+                    ' "$mdfile" > "docs/$module/$project/$filename"
+                    
+                    # Add file to sidebar (only if not README)
+                    if [ "$basename" != "README" ]; then
+                      echo "    * [$basename](/$module/$project/$filename)" >> docs/_sidebar.md
+                    fi
+                  done
+                fi
+              done
             else
-              echo "WARNING: Module directory $module not found"
-              mkdir -p "docs/$module"
-              echo "# $module Documentation" > "docs/$module/README.md"
-              echo "" >> "docs/$module/README.md"
+              echo "  No projects found for module $module"
               echo "This module does not have any documented tools yet." >> "docs/$module/README.md"
             fi
           done
@@ -396,26 +354,14 @@ jobs:
                 mkdir -p "docs/$dirname"
                 echo "# $dirname Documentation" > "docs/$dirname/README.md"
                 
-                # Add to sidebar
+                # Add to sidebar as a separate section
                 echo "* **$dirname**" >> docs/_sidebar.md
                 echo "  * [Overview](/$dirname/)" >> docs/_sidebar.md
-                
-                # Track files for deduplication
-                declare -A processed_files=()
                 
                 # Process markdown files
                 find "$help_dir" -name "*.md" -type f | while read file; do
                   filename=$(basename "$file")
                   basename="${filename%.*}"
-                  
-                  # Skip if we've already processed this file
-                  if [[ ${processed_files[$basename]} ]]; then
-                    echo "    Skipping duplicate file: $filename (basename already processed)"
-                    continue
-                  fi
-                  
-                  # Mark file as processed
-                  processed_files[$basename]=1
                   
                   echo "    Processing file: $filename"
                   
@@ -605,7 +551,7 @@ jobs:
             echo "Successfully committed and pushed documentation changes"
           fi
           echo "::endgroup::"
-
+          
       - name: GitHub Pages Setup Instructions
         if: success()
         run: |
