@@ -54,7 +54,7 @@ Follow this guide to configure OAuth for EWS:
 ### Configure Delegated Permissions
 
 1. Go to **Manifest** of your app
-   ![Step Screenshot](./images/image8.png)
+   ![Step Screenshot](images/image8.png)
 
 2. Modify the `requiredResourceAccess` section:
 
@@ -74,7 +74,7 @@ Follow this guide to configure OAuth for EWS:
 
 3. Save the manifest
 4. Confirm `EWS.AccessAsUser.All` is shown under API Permissions
-   ![Step Screenshot](./images/API_Permissions.png)
+   ![Step Screenshot](images/API_Permissions.png)
 
 ## Setup Test Mailbox (Optional)
 
@@ -93,11 +93,11 @@ Follow this guide to configure OAuth for EWS:
 
     From **Exchange admin center** > Recipients > Mailboxes > Select **mailboxes** > choose the **test mailbox** or **shared mailbox** >
     - In the side pop-up menu, Select **Mailbox** tab > Under the **Mailbox policies** > Click **Manage retention policies** under **Retention policy** section > Select the custom retention policy > Save
-      ![Alt text](./images/Assigned-RetentionPolicy.png)
+      ![Alt text](images/Assigned-RetentionPolicy.png)
     - Allow some time for the changes to propagate and the personal policy tags will show in the mailbox. Eg
-    ![Alt text](./images/ValidateAssignedPolicy.png)
+    ![Alt text](images/ValidateAssignedPolicy.png)
     - Outlook on the web view for the assigned policy to the folder _**3DaysMoveDataArchive**_.
-      ![Alt text](./images/3daysPolicy.png)
+      ![Alt text](images/3daysPolicy.png)
 
 🧠 **Note:** Archive tags will not appear in Outlook if archive is disabled.
 
@@ -111,18 +111,18 @@ Follow this guide to configure OAuth for EWS:
    
    * *Use MDS ONLINE flag when calling OpenMsgStore*
    * *Use MAPI\_NO CACHE flag when calling OpenEntry*
-     ![Step Screenshot](./images/MRM_UI_MFCMAPI_Options.png)
+     ![Step Screenshot](images/MRM_UI_MFCMAPI_Options.png)
 
 4. Go to `Session → Logon`
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_Logon.png)
+   ![Step Screenshot](images/MRM_UI_MFCMAPI_Logon.png)
 
 5. Expand the mailbox store
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_OpenStore.png)
+   ![Step Screenshot](images/MRM_UI_MFCMAPI_OpenStore.png)
 
 6. Navigate: `Root Container → Top of Information Store → [Target Folder]`
 
 7. Find `PR_RETENTION_FLAGS` and copy the value (e.g., 144)
-   ![Step Screenshot](./images/MRM_UI_MFCMAPI_RetentionFlag.png)
+   ![Step Screenshot](images/MRM_UI_MFCMAPI_RetentionFlag.png)
 
 ## Required Parameters
 
