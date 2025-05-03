@@ -1,0 +1,5 @@
+"EmailAddress","TeamType","AssignStatus","FailureReason"
+"it@iitpro.work.gd","+12065551224","Failed","The user 'it@iitpro.work.gd' is not found"
+"it11@itpro.work.gd","+12065551924","Failed","The user 'it11@itpro.work.gd' is not found"
+"itpro@itpro.work.gd","+12065551324","Succeeded","Succeeded"
+"Boris.Campbell@itpro.work.gd","+12065501324","Failed","The user '2ad00174-842b-4603-841f-682143f75a76' does not have required licenses to set attributes"
