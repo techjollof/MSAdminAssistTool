@@ -33,17 +33,17 @@ The `Perform-MgUserLicenseUpgrade` script is designed to **migrate Microsoft 365
 
 
 
-## 📌 [Parameters](#📚-parameter-details)
+## 📌 [Parameters](/EntraIDAdmin/UserLicensesManager/#📚-parameter-details)
 
 | **Parameter**                | **Type**       | **Required** | **Description**                                                                |
 | ---------------------------- | -------------- | ------------ | ------------------------------------------------------------------------------ |
-| [`-UserIds`](#userids)        | `string[]`     | ✅           | UPN(s) or path(s) to CSV file(s) containing user identifiers. It also takes direct userIds like "user@contoso.dev", "user1@contoso.dev", or a mixture of CSV file and direct UPNs.              |
-| [`-LicenseToRemove`](#licensetoremove) | `string`       | ✅*          | SKU part number to remove (e.g., `SPE_E3`).                                    |
-| [`-LicenseToAdd`](#licensetoadd)        | `string`       | ✅*          | SKU part number to assign (e.g., `SPE_E5`).                                    |
-| [`-DisabledPlans`](#disabledplans)       | `string[]`     | ❌           | Array of service plan GUIDs to disable in the new license.                     |
-| [`-SelectLicense`](#SelectLicense)       | `switch`       | ❌           | Enables interactive selection of licenses using GUI.                           |
-| [`-SelectDisabledPlans`](#SelectDisabledPlans)        | `switch`       | ❌           | Launch GUI to select which service plans to disable.                           |
-| [`-KeepExistingPlanState`](#keepexistingplanstate) | `switch`       | ❌           | Retain user’s existing disabled plan settings, if compatible with new SKU.     |
+| [`-UserIds`](/EntraIDAdmin/UserLicensesManager/#userids)        | `string[]`     | ✅           | UPN(s) or path(s) to CSV file(s) containing user identifiers. It also takes direct userIds like "user@contoso.dev", "user1@contoso.dev", or a mixture of CSV file and direct UPNs.              |
+| [`-LicenseToRemove`](/EntraIDAdmin/UserLicensesManager/#licensetoremove) | `string`       | ✅*          | SKU part number to remove (e.g., `SPE_E3`).                                    |
+| [`-LicenseToAdd`](/EntraIDAdmin/UserLicensesManager/#licensetoadd)        | `string`       | ✅*          | SKU part number to assign (e.g., `SPE_E5`).                                    |
+| [`-DisabledPlans`](/EntraIDAdmin/UserLicensesManager/#disabledplans)       | `string[]`     | ❌           | Array of service plan GUIDs to disable in the new license.                     |
+| [`-SelectLicense`](/EntraIDAdmin/UserLicensesManager/#SelectLicense)       | `switch`       | ❌           | Enables interactive selection of licenses using GUI.                           |
+| [`-SelectDisabledPlans`](/EntraIDAdmin/UserLicensesManager/#SelectDisabledPlans)        | `switch`       | ❌           | Launch GUI to select which service plans to disable.                           |
+| [`-KeepExistingPlanState`](/EntraIDAdmin/UserLicensesManager/#keepexistingplanstate) | `switch`       | ❌           | Retain user’s existing disabled plan settings, if compatible with new SKU.     |
 
 > ⚠️ `LicenseToRemove` and `LicenseToAdd` are **not required** when `-SelectLicense` is used.
 

@@ -24,5 +24,6 @@
   * [Overview](/SPOAdmin/)
 * **TeamsAdmin**
   * [Overview](/TeamsAdmin/)
+  * [TeamsBulkNumberAssignment](/TeamsAdmin/TeamsBulkNumberAssignment/)
 * **Resources**
   * [FAQ](/resources/faq)

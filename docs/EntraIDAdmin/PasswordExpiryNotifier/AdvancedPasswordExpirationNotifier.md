@@ -2,16 +2,16 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [System Architecture](#system-architecture)
-3. [Detailed Component Design](#detailed-component-design)
-4. [Implementation Details](#implementation-details)
-5. [Configuration Requirements](#configuration-requirements)
-6. [Security Considerations](#security-considerations)
-7. [Error Handling and Logging](#error-handling-and-logging)
-8. [Performance Considerations](#performance-considerations)
-9. [Deployment Instructions](#deployment-instructions)
-10. [Maintenance and Monitoring](#maintenance-and-monitoring)
+1. [Overview](/EntraIDAdmin/PasswordExpiryNotifier/#overview)
+2. [System Architecture](/EntraIDAdmin/PasswordExpiryNotifier/#system-architecture)
+3. [Detailed Component Design](/EntraIDAdmin/PasswordExpiryNotifier/#detailed-component-design)
+4. [Implementation Details](/EntraIDAdmin/PasswordExpiryNotifier/#implementation-details)
+5. [Configuration Requirements](/EntraIDAdmin/PasswordExpiryNotifier/#configuration-requirements)
+6. [Security Considerations](/EntraIDAdmin/PasswordExpiryNotifier/#security-considerations)
+7. [Error Handling and Logging](/EntraIDAdmin/PasswordExpiryNotifier/#error-handling-and-logging)
+8. [Performance Considerations](/EntraIDAdmin/PasswordExpiryNotifier/#performance-considerations)
+9. [Deployment Instructions](/EntraIDAdmin/PasswordExpiryNotifier/#deployment-instructions)
+10. [Maintenance and Monitoring](/EntraIDAdmin/PasswordExpiryNotifier/#maintenance-and-monitoring)
 
 ## Overview
 
