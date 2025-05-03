@@ -251,6 +251,17 @@ jobs:
           # Initialize success flag
           MIGRATION_SUCCESS=true
           
+          # First clear the _sidebar.md file and recreate it with just the home link
+          cat > docs/_sidebar.md << 'EOF'
+          * [Home](/)
+          EOF
+          
+          # Add modules to sidebar
+          for module in ${{ env.MODULES }}; do
+            echo "* **${module}**" >> docs/_sidebar.md
+            echo "  * [Overview](/${module}/)" >> docs/_sidebar.md
+          done
+          
           # Process modules
           for module in ${{ env.MODULES }}; do
             if [ -d "$module" ]; then
@@ -261,10 +272,23 @@ jobs:
               
               echo "Processing module: $module"
               
+              # Track projects for deduplication
+              declare -A processed_projects=()
+              
               # Process projects within the module
               for project_dir in "$module"/*/; do
                 if [ -d "$project_dir" ]; then
                   project=$(basename "$project_dir")
+                  
+                  # Skip if we've already processed this project
+                  if [[ ${processed_projects[$project]} ]]; then
+                    echo "  - Skipping duplicate project: $project (already processed)"
+                    continue
+                  fi
+                  
+                  # Mark project as processed
+                  processed_projects[$project]=1
+                  
                   echo "  - Processing project: $project"
                   
                   # Find help directory case-insensitively
@@ -281,19 +305,29 @@ jobs:
                     # Add project to module README
                     echo "- [$project](/$module/$project/)" >> "docs/$module/README.md"
                     
-                    # Add project to sidebar if not already there
-                    if ! grep -q "$module/$project" docs/_sidebar.md; then
-                      sed -i "/$module/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
-                    fi
+                    # Add project to sidebar
+                    echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
                     
                     # Find and process markdown files
                     MD_FILES_COUNT=0
                     echo "    Looking for markdown files in $help_dir"
                     
+                    # Track files for deduplication
+                    declare -A processed_files=()
+                    
                     # Process markdown files
                     find "$help_dir" -name "*.md" -type f | while read file; do
                       filename=$(basename "$file")
                       basename="${filename%.*}"
+                      
+                      # Skip if we've already processed this file
+                      if [[ ${processed_files[$basename]} ]]; then
+                        echo "      Skipping duplicate file: $filename (basename already processed)"
+                        continue
+                      fi
+                      
+                      # Mark file as processed
+                      processed_files[$basename]=1
                       
                       echo "      Processing file: $filename"
                       
@@ -308,12 +342,9 @@ jobs:
                       { print }
                       ' "$file" > "docs/$module/$project/$filename"
                       
-                      # Add file to project sidebar (only if it doesn't already exist)
+                      # Add file to project sidebar (only if not README)
                       if [ "$basename" != "README" ]; then
-                        # Use grep with word boundaries to avoid partial matches
-                        if ! grep -q "\\[$basename\\]" docs/_sidebar.md; then
-                          sed -i "/$module\/$project/a \ \ \ \ - [$basename](/$module/$project/$filename)" docs/_sidebar.md
-                        fi
+                        echo "    * [$basename](/$module/$project/$filename)" >> docs/_sidebar.md
                       fi
                       
                       MD_FILES_COUNT=$((MD_FILES_COUNT + 1))
@@ -335,9 +366,7 @@ jobs:
                     echo "Documentation for this tool is not available yet." >> "docs/$module/$project/README.md"
                     
                     # Add to sidebar
-                    if ! grep -q "$module/$project" docs/_sidebar.md; then
-                      sed -i "/$module/a \ \ - [$project](/$module/$project/)" docs/_sidebar.md
-                    fi
+                    echo "  * [$project](/$module/$project/)" >> docs/_sidebar.md
                   fi
                 fi
               done
@@ -368,15 +397,25 @@ jobs:
                 echo "# $dirname Documentation" > "docs/$dirname/README.md"
                 
                 # Add to sidebar
-                if ! grep -q "$dirname" docs/_sidebar.md; then
-                  echo "* **$dirname**" >> docs/_sidebar.md
-                  echo "  * [Overview](/$dirname/)" >> docs/_sidebar.md
-                fi
+                echo "* **$dirname**" >> docs/_sidebar.md
+                echo "  * [Overview](/$dirname/)" >> docs/_sidebar.md
+                
+                # Track files for deduplication
+                declare -A processed_files=()
                 
                 # Process markdown files
                 find "$help_dir" -name "*.md" -type f | while read file; do
                   filename=$(basename "$file")
                   basename="${filename%.*}"
+                  
+                  # Skip if we've already processed this file
+                  if [[ ${processed_files[$basename]} ]]; then
+                    echo "    Skipping duplicate file: $filename (basename already processed)"
+                    continue
+                  fi
+                  
+                  # Mark file as processed
+                  processed_files[$basename]=1
                   
                   echo "    Processing file: $filename"
                   
@@ -393,9 +432,7 @@ jobs:
                   
                   # Add to sidebar
                   if [ "$basename" != "README" ]; then
-                    if ! grep -q "$basename" docs/_sidebar.md; then
-                      sed -i "/$dirname\/\)/a \ \ \ \ * [$basename](/$dirname/$filename)" docs/_sidebar.md
-                    fi
+                    echo "    * [$basename](/$dirname/$filename)" >> docs/_sidebar.md
                   fi
                 done
               fi
