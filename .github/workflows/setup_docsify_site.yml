@@ -306,32 +306,78 @@ jobs:
                     echo "    Processing file: $filename"
                     
                     # Process markdown content - fix internal links but preserve external links
+                    # Using character-by-character approach instead of regex lookahead
                     awk -v module="$module" -v project="$project" '
                     BEGIN { in_code_block = 0 }
                     /^```/ { in_code_block = !in_code_block; print; next }
                     in_code_block { print; next }
-                    # Fix internal links but preserve external links
                     {
-                      # This regex matches markdown links that don\'t start with http, https, ftp, mailto
-                      # and updates them to include the module/project path
                       line = $0
-                      while (match(line, /\[([^\]]+)\]\((?!http|https|ftp|mailto)([^)]+)\)/)) {
-                        linktext = substr(line, RSTART+1, RLENGTH-2)
-                        sub(/\].*/, "", linktext)
-                        link = substr(line, RSTART+length(linktext)+2, RLENGTH-length(linktext)-3)
+                      pos = 1
+                      result = ""
+                      
+                      # Process each character, looking for markdown links
+                      while (pos <= length(line)) {
+                        # Look for opening bracket
+                        start_pos = index(substr(line, pos), "[")
+                        if (start_pos == 0) {
+                          # No more links found
+                          result = result substr(line, pos)
+                          break
+                        }
                         
-                        # Replace the matched part
-                        before = substr(line, 1, RSTART-1)
-                        after = substr(line, RSTART+RLENGTH)
-                        if (link ~ /^\//) {
-                          # Absolute path link, don't modify
-                          line = before "[" linktext "](" link ")" after
+                        # Add everything before the link
+                        result = result substr(line, pos, start_pos - 1)
+                        pos = pos + start_pos - 1
+                        
+                        # Extract link text between [] and link URL between ()
+                        text_start = pos + 1
+                        text_end_pos = index(substr(line, text_start), "]")
+                        if (text_end_pos == 0) {
+                          # Incomplete link, just continue
+                          result = result "["
+                          pos++
+                          continue
+                        }
+                        
+                        text_end = text_start + text_end_pos - 1
+                        link_text = substr(line, text_start, text_end - text_start)
+                        pos = text_end + 1
+                        
+                        # Check if followed by opening parenthesis for URL
+                        if (substr(line, pos, 1) != "(") {
+                          result = result "[" link_text "]"
+                          continue
+                        }
+                        
+                        # Extract URL
+                        url_start = pos + 1
+                        url_end_pos = index(substr(line, url_start), ")")
+                        if (url_end_pos == 0) {
+                          # Incomplete link, just add what we have
+                          result = result "[" link_text "]("
+                          pos++
+                          continue
+                        }
+                        
+                        url_end = url_start + url_end_pos - 1
+                        url = substr(line, url_start, url_end - url_start)
+                        pos = url_end + 1
+                        
+                        # Check if URL starts with http://, https://, ftp://, or mailto:
+                        if (url ~ /^(http|https|ftp|mailto):/) {
+                          # External link, keep as is
+                          result = result "[" link_text "](" url ")"
+                        } else if (url ~ /^\//) {
+                          # Absolute path link, keep as is
+                          result = result "[" link_text "](" url ")"
                         } else {
                           # Relative link, add module/project prefix
-                          line = before "[" linktext "](/" module "/" project "/" link ")" after
+                          result = result "[" link_text](/" module "/" project "/" url ")"
                         }
                       }
-                      print line
+                      
+                      print result
                     }
                     ' "$mdfile" > "docs/$module/$project/$filename"
                     
@@ -356,7 +402,7 @@ jobs:
                     
                     # Update image references in all markdown files
                     find "docs/$module/$project" -name "*.md" | while read mdfile; do
-                      sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1](/images/$img_basename)|g" "$mdfile"
+                      sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1(/$module/$project/images/$img_basename)|g" "$mdfile"
                     done
                   done
                 fi
@@ -398,30 +444,78 @@ jobs:
                   echo "    Processing file: $filename"
                   
                   # Process markdown content preserving external links
+                  # Using character-by-character approach instead of regex lookahead
                   awk -v dirname="$dirname" '
                   BEGIN { in_code_block = 0 }
                   /^```/ { in_code_block = !in_code_block; print; next }
                   in_code_block { print; next }
-                  # Fix internal links but preserve external links
                   {
                     line = $0
-                    while (match(line, /\[([^\]]+)\]\((?!http|https|ftp|mailto)([^)]+)\)/)) {
-                      linktext = substr(line, RSTART+1, RLENGTH-2)
-                      sub(/\].*/, "", linktext)
-                      link = substr(line, RSTART+length(linktext)+2, RLENGTH-length(linktext)-3)
+                    pos = 1
+                    result = ""
+                    
+                    # Process each character, looking for markdown links
+                    while (pos <= length(line)) {
+                      # Look for opening bracket
+                      start_pos = index(substr(line, pos), "[")
+                      if (start_pos == 0) {
+                        # No more links found
+                        result = result substr(line, pos)
+                        break
+                      }
                       
-                      # Replace the matched part
-                      before = substr(line, 1, RSTART-1)
-                      after = substr(line, RSTART+RLENGTH)
-                      if (link ~ /^\//) {
-                        # Absolute path link, don't modify
-                        line = before "[" linktext "](" link ")" after
+                      # Add everything before the link
+                      result = result substr(line, pos, start_pos - 1)
+                      pos = pos + start_pos - 1
+                      
+                      # Extract link text between [] and link URL between ()
+                      text_start = pos + 1
+                      text_end_pos = index(substr(line, text_start), "]")
+                      if (text_end_pos == 0) {
+                        # Incomplete link, just continue
+                        result = result "["
+                        pos++
+                        continue
+                      }
+                      
+                      text_end = text_start + text_end_pos - 1
+                      link_text = substr(line, text_start, text_end - text_start)
+                      pos = text_end + 1
+                      
+                      # Check if followed by opening parenthesis for URL
+                      if (substr(line, pos, 1) != "(") {
+                        result = result "[" link_text "]"
+                        continue
+                      }
+                      
+                      # Extract URL
+                      url_start = pos + 1
+                      url_end_pos = index(substr(line, url_start), ")")
+                      if (url_end_pos == 0) {
+                        # Incomplete link, just add what we have
+                        result = result "[" link_text "]("
+                        pos++
+                        continue
+                      }
+                      
+                      url_end = url_start + url_end_pos - 1
+                      url = substr(line, url_start, url_end - url_start)
+                      pos = url_end + 1
+                      
+                      # Check if URL starts with http://, https://, ftp://, or mailto:
+                      if (url ~ /^(http|https|ftp|mailto):/) {
+                        # External link, keep as is
+                        result = result "[" link_text "](" url ")"
+                      } else if (url ~ /^\//) {
+                        # Absolute path link, keep as is
+                        result = result "[" link_text "](" url ")"
                       } else {
                         # Relative link, add dirname prefix
-                        line = before "[" linktext "](/" dirname "/" link ")" after
+                        result = result "[" link_text](/" dirname "/" url ")"
                       }
                     }
-                    print line
+                    
+                    print result
                   }
                   ' "$file" > "docs/$dirname/$filename"
                   
@@ -446,7 +540,7 @@ jobs:
                   
                   # Update image references in all markdown files
                   find "docs/$dirname" -name "*.md" | while read mdfile; do
-                    sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1](/images/$img_basename)|g" "$mdfile"
+                    sed -i "s|\(!\[.*\]\)(.*$img_basename)|\1(/$dirname/images/$img_basename)|g" "$mdfile"
                   done
                 done
               fi
